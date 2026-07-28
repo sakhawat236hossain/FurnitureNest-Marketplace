@@ -1,31 +1,32 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const Links = () => (
     <>
-      <a href="#home" className="hover:text-amber-500 transition">
+      <Link href="/" className="hover:text-amber-500 transition">
         Home
-      </a>
+      </Link>
 
-      <a href="#categories" className="hover:text-amber-500 transition">
+      <Link href="/categories" className="hover:text-amber-500 transition">
         Categories
-      </a>
+      </Link>
 
-      <a href="#featured" className="hover:text-amber-500 transition">
+      <Link href="/featured" className="hover:text-amber-500 transition">
         Featured
-      </a>
+      </Link>
 
-      <a href="#latest" className="hover:text-amber-500 transition">
+      <Link href="/latest" className="hover:text-amber-500 transition">
         Latest
-      </a>
+      </Link>
 
-      <a href="#contact" className="hover:text-amber-500 transition">
+      <Link href="/contact" className="hover:text-amber-500 transition">
         Contact
-      </a>
+      </Link>
     </>
   );
 
@@ -34,7 +35,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
               F
             </div>
@@ -42,7 +43,7 @@ export default function Navbar() {
             <span className="text-2xl font-extrabold text-white tracking-wide">
               FurnishNest
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Menu */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-200">
@@ -51,19 +52,19 @@ export default function Navbar() {
 
           {/* Desktop Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <a
+            <Link
               href="/login"
               className="text-sm font-medium text-gray-200 hover:text-amber-400 transition"
             >
               Login
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/register"
               className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:scale-105 hover:shadow-lg transition duration-300"
             >
               Register
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,37 +73,7 @@ export default function Navbar() {
             className="md:hidden p-2 rounded-lg hover:bg-white/10 transition text-white"
             aria-label="Open menu"
           >
-            {open ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
-            )}
+            {open ? '✕' : '☰'}
           </button>
         </div>
 
@@ -112,19 +83,19 @@ export default function Navbar() {
             <nav className="flex flex-col gap-4 pt-4 text-sm font-medium text-gray-200 px-2">
               <Links />
 
-              <a
+              <Link
                 href="/login"
                 className="pt-3 border-t border-white/10 hover:text-amber-400 transition"
               >
                 Login
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/register"
                 className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-xl text-center font-semibold hover:scale-[1.02] transition duration-300"
               >
                 Register
-              </a>
+              </Link>
             </nav>
           </div>
         )}
