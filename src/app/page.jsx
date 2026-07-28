@@ -2,6 +2,7 @@ import CategorySection from "@/components/Home/CategorySection";
 import FeaturedSection from "@/components/Home/FeaturedSection";
 import HeroSection from "@/components/Home/HeroSection";
 import LatestSection from "@/components/Home/LatestSection";
+import NewsletterSection from "@/components/Home/NewsletterSection";
 import TestimonialSection from "@/components/Home/TestimonialSection";
 import WhyChooseUs from "@/components/Home/WhyChooseUs";
 
@@ -19,6 +20,8 @@ export default function Home() {
       <WhyChooseUs></WhyChooseUs>
 
       <TestimonialSection></TestimonialSection>
+
+      <NewsletterSection></NewsletterSection>
     </main>
   );
 }
