@@ -1,10 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { signIn } from 'next-auth/react';
 
 export default function GoogleLoginButton() {
-  const handleGoogleLogin = () => {
-    alert('Google login setup next step');
+  const handleGoogleLogin = async () => {
+    await signIn('google', {
+      callbackUrl: '/',
+    });
   };
 
   return (
