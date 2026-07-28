@@ -1,4 +1,5 @@
 import CategorySection from '@/components/Home/CategorySection';
+import FeaturedSection from '@/components/Home/FeaturedSection';
 import HeroSection from '@/components/Home/HeroSection';
 
 export default function Home() {
@@ -7,6 +8,8 @@ export default function Home() {
       <HeroSection />
 
       <CategorySection></CategorySection>
+
+      <FeaturedSection />
     </main>
   );
 }
