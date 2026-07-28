@@ -1,7 +1,8 @@
-import CategorySection from '@/components/Home/CategorySection';
-import FeaturedSection from '@/components/Home/FeaturedSection';
-import HeroSection from '@/components/Home/HeroSection';
-import LatestSection from '@/components/Home/LatestSection';
+import CategorySection from "@/components/Home/CategorySection";
+import FeaturedSection from "@/components/Home/FeaturedSection";
+import HeroSection from "@/components/Home/HeroSection";
+import LatestSection from "@/components/Home/LatestSection";
+import WhyChooseUs from "@/components/Home/WhyChooseUs";
 
 export default function Home() {
   return (
@@ -13,6 +14,8 @@ export default function Home() {
       <FeaturedSection />
 
       <LatestSection></LatestSection>
+
+      <WhyChooseUs></WhyChooseUs>
     </main>
   );
 }
