@@ -39,6 +39,9 @@ export default function Navbar() {
     }
   };
 
+
+  
+
   const Links = () => (
     <>
       <Link href="/" className="hover:text-amber-500 transition">
@@ -139,7 +142,7 @@ export default function Navbar() {
                       </div>
 
                       <Link
-                        href="/profile"
+                        href="dashboard/profile"
                         className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-200 hover:bg-white/5 hover:text-amber-300 transition"
                         onClick={() => setProfileOpen(false)}
                       >

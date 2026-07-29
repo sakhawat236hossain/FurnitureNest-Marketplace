@@ -153,7 +153,7 @@ export default function Footer() {
 
             <div className="mt-6 flex gap-3">
               {[
-                { name: 'Facebook', href: 'https://facebook.com', label: 'f' },
+                { name: 'Facebook', href: 'https://www.facebook.com/md.sakhawth.hossain', label: 'f' },
                 { name: 'Instagram', href: 'https://instagram.com', label: '◎' },
                 { name: 'X', href: 'https://x.com', label: '𝕏' },
               ].map((social) => (

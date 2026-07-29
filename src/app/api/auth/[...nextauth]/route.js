@@ -17,6 +17,7 @@ const handler = NextAuth({
       const existingUser = await usersCollection.findOne({
         email: user.email,
       });
+      session.user.role = existingUser?.role || 'user';
 
       if (!existingUser) {
         await usersCollection.insertOne({

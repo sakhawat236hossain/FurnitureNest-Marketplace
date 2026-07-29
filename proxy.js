@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
@@ -11,21 +11,20 @@ export async function proxy(request) {
 
   // Protected routes
   const isProtectedRoute =
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/profile');
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/profile");
 
   if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Prevent logged-in users from visiting login/register
   const isAuthPage =
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/register');
+    pathname.startsWith("/login") || pathname.startsWith("/register");
 
   if (isAuthPage && token) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
@@ -33,10 +32,14 @@ export async function proxy(request) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/admin/:path*',
-    '/profile/:path*',
-    '/login',
-    '/register',
+    "/dashboard/:path*",
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/seller/:path*",
+    "/profile/:path*",
+    "/admin/:path*",
+    "/profile/:path*",
+    "/login",
+    "/register",
   ],
 };
