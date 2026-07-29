@@ -1,6 +1,6 @@
-import NextAuth from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import { dbConnect, collections } from '@/lib/dbConnect';
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { dbConnect, collections } from "@/lib/dbConnect";
 
 const handler = NextAuth({
   providers: [
@@ -23,7 +23,8 @@ const handler = NextAuth({
           name: user.name,
           email: user.email,
           image: user.image,
-          provider: 'google',
+          role: "user", // default role
+          provider: "google",
           createdAt: new Date(),
         });
       }
