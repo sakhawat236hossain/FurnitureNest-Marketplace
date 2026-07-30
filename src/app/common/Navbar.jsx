@@ -1,73 +1,97 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard,
-  LogOut,
-  User,
-} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { LayoutDashboard, User, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [localUser, setLocalUser] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  // localStorage user load
+  // Sync user from NextAuth or localStorage
   useEffect(() => {
+    if (session?.user) {
+      setUser(session.user);
+      return;
+    }
+
     const storedUser = localStorage.getItem('user');
 
     if (storedUser) {
-      setLocalUser(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser));
+    } else {
+      setUser(null);
     }
-  }, []);
-
-  // Google session or localStorage user
-  const user = session?.user || localUser;
+  }, [session]);
 
   const handleLogout = async () => {
     localStorage.removeItem('user');
 
-    if (session) {
+    if (session?.user) {
       await signOut({ callbackUrl: '/' });
     } else {
-      window.location.href = '/';
+      setUser(null);
+      router.push('/');
     }
   };
 
+ const handleDashboard = () => {
+  if (!user) {
+    router.push('/login');
+    return;
+  }
 
-  
-
+  if (user.role === 'admin') {
+    router.push('/admin');
+  } else if (user.role === 'seller') {
+    router.push('/seller');
+  } else {
+    router.push('/dashboard/user');
+  }
+};
   const Links = () => (
     <>
       <Link href="/" className="hover:text-amber-500 transition">
         Home
       </Link>
 
-      <Link href="/categories" className="hover:text-amber-500 transition">
+      <Link
+        href="/categories"
+        className="hover:text-amber-500 transition"
+      >
         Categories
       </Link>
 
-      <Link href="/featured" className="hover:text-amber-500 transition">
+      <Link
+        href="/featured"
+        className="hover:text-amber-500 transition"
+      >
         Featured
       </Link>
 
-      <Link href="/latest" className="hover:text-amber-500 transition">
+      <Link
+        href="/latest"
+        className="hover:text-amber-500 transition"
+      >
         Latest
       </Link>
 
-      <Link href="/contact" className="hover:text-amber-500 transition">
+      <Link
+        href="/contact"
+        className="hover:text-amber-500 transition"
+      >
         Contact
       </Link>
     </>
   );
 
   return (
-    <header className="sticky top-0 z-50 cursor-pointer bg-gradient-to-r from-slate-900 via-gray-900 to-slate-800 shadow-lg">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-800 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -86,95 +110,52 @@ export default function Navbar() {
             <Links />
           </nav>
 
-          {/* Desktop Right Side */}
-          <div className="hidden md:flex items-center gap-3 relative">
-            {status === 'loading' ? (
-              <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
-            ) : user ? (
+          {/* Desktop Auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
               <>
-                {/* Dashboard button */}
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-gray-200 hover:border-amber-400 hover:text-amber-300 transition"
-                >
-                  <LayoutDashboard size={16} />
-                  Dashboard
-                </Link>
-
-                {/* Profile dropdown */}
                 <button
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 pr-3 hover:border-amber-400 transition"
+                  onClick={handleDashboard}
+                  className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
+                >
+                  <LayoutDashboard size={18} />
+                  Dashboard
+                </button>
+
+                <Link
+                  href="/dashboard/profile"
+                  className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 hover:bg-white/20 transition"
                 >
                   {user.image ? (
                     <img
                       src={user.image}
-                      alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover border border-amber-400/40"
+                      alt="profile"
+                      className="w-8 h-8 rounded-full object-cover border border-white/20"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold">
-                      {user.name?.charAt(0) || 'U'}
+                    <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
+                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                   )}
 
-                  <span className="text-sm text-white max-w-28 truncate">
+                  <span className="text-sm text-white font-medium max-w-28 truncate">
                     {user.name}
                   </span>
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 rounded-xl border border-red-400/30 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-500/10 transition"
+                >
+                  <LogOut size={18} />
+                  Logout
                 </button>
-
-                <AnimatePresence>
-                  {profileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-14 w-64 rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-xl p-2 shadow-2xl"
-                    >
-                      <div className="px-3 py-3 border-b border-white/10">
-                        <p className="text-sm font-semibold text-white truncate">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-gray-400 truncate">
-                          {user.email}
-                        </p>
-                      </div>
-
-                      <Link
-                        href="dashboard/profile"
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-200 hover:bg-white/5 hover:text-amber-300 transition"
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        <User size={16} />
-                        Profile
-                      </Link>
-
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-200 hover:bg-white/5 hover:text-amber-300 transition"
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        <LayoutDashboard size={16} />
-                        Dashboard
-                      </Link>
-
-                      <button
-                        onClick={handleLogout}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition"
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-gray-200 hover:text-amber-400 transition cursor-pointer"
+                  className="text-sm font-medium text-gray-200 hover:text-amber-400 transition"
                 >
                   Login
                 </Link>
@@ -200,94 +181,76 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="md:hidden overflow-hidden border-t border-white/10 bg-slate-900/95 rounded-b-2xl"
-            >
-              <nav className="flex flex-col gap-4 pt-4 pb-4 text-sm font-medium text-gray-200 px-4 cursor-pointer">
-                <Links />
+        {open && (
+          <div className="md:hidden pb-4 border-t border-white/10 bg-slate-900/95 rounded-b-2xl">
+            <nav className="flex flex-col gap-4 pt-4 text-sm font-medium text-gray-200 px-2">
+              <Links />
 
-                <div className="border-t border-white/10 pt-4">
-                  {user ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        {user.image ? (
-                          <img
-                            src={user.image}
-                            alt={user.name}
-                            className="w-12 h-12 rounded-full object-cover border border-amber-400/40"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold">
-                            {user.name?.charAt(0) || 'U'}
-                          </div>
-                        )}
+              {user ? (
+                <>
+                  <button
+                    onClick={handleDashboard}
+                    className="flex items-center gap-2 pt-3 border-t border-white/10 text-left hover:text-amber-400 transition"
+                  >
+                    <LayoutDashboard size={18} />
+                    Dashboard
+                  </button>
 
-                        <div className="min-w-0">
-                          <p className="text-white font-semibold truncate">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-gray-400 truncate">
-                            {user.email}
-                          </p>
-                        </div>
+                  <Link
+                    href="/dashboard/profile"
+                    className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3 hover:bg-white/10 transition"
+                  >
+                    {user.image ? (
+                      <img
+                        src={user.image}
+                        alt="profile"
+                        className="w-9 h-9 rounded-full object-cover border border-white/20"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
+                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
+                    )}
 
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:border-amber-400 hover:text-amber-300 transition"
-                        onClick={() => setOpen(false)}
-                      >
-                        <User size={18} />
-                        Profile
-                      </Link>
+                    <div className="flex flex-col">
+                      <span className="text-white font-medium">
+                        {user.name}
+                      </span>
 
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 hover:border-amber-400 hover:text-amber-300 transition"
-                        onClick={() => setOpen(false)}
-                      >
-                        <LayoutDashboard size={18} />
-                        Dashboard
-                      </Link>
-
-                      <button
-                        onClick={handleLogout}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500/10 px-4 py-3 text-red-400 hover:bg-red-500/20 transition"
-                      >
-                        <LogOut size={18} />
-                        Logout
-                      </button>
+                      <span className="text-xs text-gray-400 capitalize">
+                        {user.role || 'user'}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      <Link
-                        href="/login"
-                        className="rounded-xl border border-white/10 px-4 py-3 text-center hover:border-amber-400 hover:text-amber-300 transition"
-                        onClick={() => setOpen(false)}
-                      >
-                        Login
-                      </Link>
+                  </Link>
 
-                      <Link
-                        href="/register"
-                        className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-3 rounded-xl text-center font-semibold hover:scale-[1.02] transition duration-300"
-                        onClick={() => setOpen(false)}
-                      >
-                        Register
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 rounded-xl border border-red-400/30 px-3 py-3 text-left text-red-300 hover:bg-red-500/10 transition"
+                  >
+                    <LogOut size={18} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="pt-3 border-t border-white/10 hover:text-amber-400 transition"
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    href="/register"
+                    className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-xl text-center font-semibold hover:scale-[1.02] transition duration-300"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

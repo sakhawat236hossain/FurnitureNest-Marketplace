@@ -38,6 +38,8 @@ export async function POST(request) {
         email: user.email,
         phone: user.phone,
         image: user.image,
+        role: user.role,
+        
       },
     });
   } catch (error) {

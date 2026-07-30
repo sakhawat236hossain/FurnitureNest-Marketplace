@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import SellerSidebar from '@/components/Seller/SellerSidebar';
 
-export default function SellerLayout({ children }) {
+export default function AdminLayout({ children }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -15,6 +14,7 @@ export default function SellerLayout({ children }) {
 
     let role = session?.user?.role;
 
+    // localStorage fallback
     if (!role) {
       const storedUser = localStorage.getItem('user');
 
@@ -23,7 +23,7 @@ export default function SellerLayout({ children }) {
       }
     }
 
-    if (role === 'seller') {
+    if (role === 'admin') {
       setChecking(false);
     } else {
       router.push('/login');
@@ -38,13 +38,5 @@ export default function SellerLayout({ children }) {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex">
-      <SellerSidebar />
-
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
-        {children}
-      </main>
-    </div>
-  );
+  return <div className="min-h-screen">{children}</div>;
 }

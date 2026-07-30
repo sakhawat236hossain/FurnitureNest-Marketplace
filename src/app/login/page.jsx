@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,30 +28,39 @@ export default function LoginPage() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data) => {
-    try {
-      const res = await axios.post('/api/auth/login', data);
+const onSubmit = async (data) => {
+  try {
+    const res = await axios.post('/api/auth/login', data);
 
-      if (res.data.success) {
-        // user localStorage এ save
-        localStorage.setItem(
-          'user',
-          JSON.stringify(res.data.user)
-        );
+    if (res.data.success) {
+      // পুরনো user remove
+      localStorage.removeItem('user');
 
-        toast.success('Login successful');
-
-        // 1 second পরে home page এ redirect
-        setTimeout(() => {
-          router.push('/');
-        }, 1000);
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || 'Login failed'
+      // নতুন user save
+      localStorage.setItem(
+        'user',
+        JSON.stringify(res.data.user)
       );
+
+      console.log('Logged in user:', res.data.user);
+
+      toast.success('Login successful');
+
+      // role অনুযায়ী redirect
+      const role = res.data.user.role;
+
+      if (role === 'admin') {
+        router.replace('/admin');
+      } else if (role === 'seller') {
+        router.replace('/seller');
+      } else {
+        router.replace('/dashboard/user');
+      }
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Login failed');
+  }
+};
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-950 overflow-hidden px-4 py-10">
