@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { LayoutDashboard, User, LogOut } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { LayoutDashboard, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export default function Navbar() {
       return;
     }
 
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
 
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -30,61 +30,49 @@ export default function Navbar() {
   }, [session]);
 
   const handleLogout = async () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
 
     if (session?.user) {
-      await signOut({ callbackUrl: '/' });
+      await signOut({ callbackUrl: "/" });
     } else {
       setUser(null);
-      router.push('/');
+      router.push("/");
     }
   };
 
- const handleDashboard = () => {
-  if (!user) {
-    router.push('/login');
-    return;
-  }
+  const handleDashboard = () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-  if (user.role === 'admin') {
-    router.push('/admin');
-  } else if (user.role === 'seller') {
-    router.push('/seller');
-  } else {
-    router.push('/dashboard/user');
-  }
-};
+    if (user.role === "admin") {
+      router.push("/admin");
+    } else if (user.role === "seller") {
+      router.push("/seller");
+    } else {
+      router.push("/dashboard/user");
+    }
+  };
   const Links = () => (
     <>
       <Link href="/" className="hover:text-amber-500 transition">
         Home
       </Link>
 
-      <Link
-        href="/categories"
-        className="hover:text-amber-500 transition"
-      >
+      <Link href="/categories" className="hover:text-amber-500 transition">
         Categories
       </Link>
 
-      <Link
-        href="/featured"
-        className="hover:text-amber-500 transition"
-      >
+      <Link href="/featured" className="hover:text-amber-500 transition">
         Featured
       </Link>
 
-      <Link
-        href="/latest"
-        className="hover:text-amber-500 transition"
-      >
+      <Link href="/latest" className="hover:text-amber-500 transition">
         Latest
       </Link>
 
-      <Link
-        href="/contact"
-        className="hover:text-amber-500 transition"
-      >
+      <Link href="/contact" className="hover:text-amber-500 transition">
         Contact
       </Link>
     </>
@@ -134,7 +122,7 @@ export default function Navbar() {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
-                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                      {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                   )}
 
@@ -176,7 +164,7 @@ export default function Navbar() {
             className="md:hidden p-2 rounded-lg hover:bg-white/10 transition text-white"
             aria-label="Open menu"
           >
-            {open ? '✕' : '☰'}
+            {open ? "✕" : "☰"}
           </button>
         </div>
 
@@ -208,7 +196,7 @@ export default function Navbar() {
                       />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
-                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
                     )}
 
@@ -218,7 +206,7 @@ export default function Navbar() {
                       </span>
 
                       <span className="text-xs text-gray-400 capitalize">
-                        {user.role || 'user'}
+                        {user.role || "user"}
                       </span>
                     </div>
                   </Link>
