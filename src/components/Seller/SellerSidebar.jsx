@@ -29,7 +29,7 @@ export default function SellerSidebar() {
     <aside className="hidden md:flex w-72 flex-col justify-between border-r border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 p-5 min-h-screen">
       <div>
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
             F
           </div>
           <div>
@@ -52,7 +52,7 @@ export default function SellerSidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   active
-                    ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md"
+                    ? "bg-linear-to-r from-amber-400 to-orange-500 text-white shadow-md"
                     : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5"
                 }`}
               >
