@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
-import { motion } from 'framer-motion';
-import { Mail, Lock } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
-import GoogleLoginButton from '@/components/Auth/GoogleLoginButton';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { Mail, Lock } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import GoogleLoginButton from "@/components/Auth/GoogleLoginButton";
 
 const schema = z.object({
-  email: z.email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export default function LoginPage() {
@@ -28,39 +28,24 @@ export default function LoginPage() {
     resolver: zodResolver(schema),
   });
 
-const onSubmit = async (data) => {
-  try {
-    const res = await axios.post('/api/auth/login', data);
+  const onSubmit = async (data) => {
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-    if (res.data.success) {
-      // পুরনো user remove
-      localStorage.removeItem('user');
-
-      // নতুন user save
-      localStorage.setItem(
-        'user',
-        JSON.stringify(res.data.user)
-      );
-
-      console.log('Logged in user:', res.data.user);
-
-      toast.success('Login successful');
-
-      // role অনুযায়ী redirect
-      const role = res.data.user.role;
-
-      if (role === 'admin') {
-        router.replace('/admin');
-      } else if (role === 'seller') {
-        router.replace('/seller');
-      } else {
-        router.replace('/dashboard/user');
+      if (result?.error) {
+        throw new Error("Invalid email or password");
       }
+
+      toast.success("Login successful");
+      router.replace("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Login failed");
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || 'Login failed');
-  }
-};
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-950 overflow-hidden px-4 py-10">
@@ -79,9 +64,7 @@ const onSubmit = async (data) => {
             F
           </div>
 
-          <h1 className="mt-4 text-3xl font-black text-white">
-            Welcome Back
-          </h1>
+          <h1 className="mt-4 text-3xl font-black text-white">Welcome Back</h1>
 
           <p className="mt-2 text-gray-400">
             Login to continue shopping premium furniture
@@ -106,16 +89,13 @@ const onSubmit = async (data) => {
         </div>
 
         {/* Form */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="mt-6 space-y-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <InputField
             icon={Mail}
             type="email"
             placeholder="Email Address"
             error={errors.email?.message}
-            register={register('email')}
+            register={register("email")}
           />
 
           <InputField
@@ -123,7 +103,7 @@ const onSubmit = async (data) => {
             type="password"
             placeholder="Password"
             error={errors.password?.message}
-            register={register('password')}
+            register={register("password")}
           />
 
           <motion.button
@@ -138,7 +118,7 @@ const onSubmit = async (data) => {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-400">
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <Link
             href="/register"
             className="text-amber-400 hover:text-amber-300 font-medium transition"
@@ -155,7 +135,7 @@ function InputField({
   icon: Icon,
   register,
   error,
-  type = 'text',
+  type = "text",
   placeholder,
 }) {
   return (
@@ -171,9 +151,7 @@ function InputField({
         />
       </div>
 
-      {error && (
-        <p className="mt-1 text-sm text-red-400">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
     </div>
   );
 }
