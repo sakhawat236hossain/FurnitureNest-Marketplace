@@ -11,7 +11,6 @@ const handler = NextAuth({
   ],
 
   callbacks: {
-    // Google login হলে user DB তে save
     async signIn({ user }) {
       const usersCollection = await dbConnect(collections.USERS);
 
@@ -33,25 +32,30 @@ const handler = NextAuth({
       return true;
     },
 
-    // JWT token এ role save
     async jwt({ token }) {
       if (token.email) {
         const usersCollection = await dbConnect(collections.USERS);
-
         const dbUser = await usersCollection.findOne({
           email: token.email,
         });
 
-        token.role = dbUser?.role || 'user';
+        if (dbUser) {
+          token.role = dbUser.role || 'user';
+          token.id = dbUser._id.toString();
+          token.name = dbUser.name || token.name;
+          token.image = dbUser.image || token.image;
+        }
       }
 
       return token;
     },
 
-    // Session এ role পাঠানো
     async session({ session, token }) {
       if (session.user) {
+        session.user.id = token.id;
         session.user.role = token.role || 'user';
+        session.user.name = token.name;
+        session.user.image = token.image;
       }
 
       return session;

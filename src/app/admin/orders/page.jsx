@@ -1,42 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import { ShoppingCart, CheckCircle, Truck, Clock } from 'lucide-react';
+import { ShoppingBag, CheckCircle, Truck, Clock, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function SellerOrdersPage() {
-  const { data: session } = useSession();
+export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchOrders();
-  }, [session]);
+  }, []);
 
   const fetchOrders = async () => {
-    let email = session?.user?.email;
-
-    if (!email && typeof window !== 'undefined') {
-      const stored = localStorage.getItem('user');
-      if (stored) email = JSON.parse(stored).email;
-    }
-
-    if (!email) {
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const res = await axios.get(`/api/seller/orders?email=${email}`);
+      const res = await axios.get('/api/admin/orders');
       if (res.data.success) {
         setOrders(res.data.orders);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch requested orders');
+      toast.error('Failed to fetch orders');
     } finally {
       setLoading(false);
     }
@@ -44,20 +30,20 @@ export default function SellerOrdersPage() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const res = await axios.patch('/api/seller/orders', {
+      const res = await axios.patch('/api/admin/orders', {
         orderId,
         status: newStatus,
       });
 
       if (res.data.success) {
-        toast.success(`Order marked as ${newStatus.toUpperCase()}`);
+        toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
         setOrders((prev) =>
           prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
         );
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to update status');
+      toast.error('Failed to update order status');
     }
   };
 
@@ -65,11 +51,11 @@ export default function SellerOrdersPage() {
     <div className="space-y-6 p-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-          <ShoppingCart className="text-amber-500" size={32} />
-          Customer Requested Orders
+          <ShoppingBag className="text-amber-500" size={32} />
+          Global Order Management
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          View and process orders placed by customers for your furniture items.
+          Track customer purchases across all vendors and update fulfillment statuses.
         </p>
       </div>
 
@@ -80,7 +66,7 @@ export default function SellerOrdersPage() {
           </div>
         ) : orders.length === 0 ? (
           <div className="py-16 text-center text-gray-500 dark:text-gray-400">
-            No customer orders received yet.
+            No orders found in the system yet.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -88,10 +74,11 @@ export default function SellerOrdersPage() {
               <thead className="border-b border-gray-200 dark:border-white/10 text-xs uppercase text-gray-500 dark:text-gray-400">
                 <tr>
                   <th className="pb-4">Customer</th>
-                  <th className="pb-4">Shipping Address</th>
+                  <th className="pb-4">Items Count</th>
                   <th className="pb-4">Total Price</th>
-                  <th className="pb-4">Fulfillment Status</th>
-                  <th className="pb-4 text-right">Update Order</th>
+                  <th className="pb-4">Order Date</th>
+                  <th className="pb-4">Status</th>
+                  <th className="pb-4 text-right">Update Fulfillment</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -103,11 +90,17 @@ export default function SellerOrdersPage() {
                     </td>
 
                     <td className="py-4 text-gray-600 dark:text-gray-300">
-                      {order.shippingAddress || 'Dhaka, Bangladesh'}
+                      {order.items?.length || 1} item(s)
                     </td>
 
                     <td className="py-4 font-extrabold text-gray-900 dark:text-white">
                       ৳{(order.totalPrice || 0).toLocaleString()}
+                    </td>
+
+                    <td className="py-4 text-xs text-gray-500 dark:text-gray-400">
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString()
+                        : 'N/A'}
                     </td>
 
                     <td className="py-4">
@@ -117,6 +110,8 @@ export default function SellerOrdersPage() {
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
                             : order.status === 'shipped'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+                            : order.status === 'cancelled'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
                             : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
                         }`}
                       >
@@ -134,6 +129,7 @@ export default function SellerOrdersPage() {
                         <option value="processing">Processing</option>
                         <option value="shipped">Shipped</option>
                         <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                     </td>
                   </tr>
