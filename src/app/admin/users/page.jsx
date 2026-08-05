@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Users,
   Search,
@@ -12,14 +12,14 @@ import {
   UserCheck,
   Store,
   User as UserIcon,
-} from 'lucide-react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
@@ -30,14 +30,14 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       const res = await axios.get(
-        `/api/admin/users?role=${roleFilter}&q=${search}`
+        `/api/admin/users?role=${roleFilter}&q=${search}`,
       );
       if (res.data.success) {
         setUsers(res.data.users);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch users');
+      toast.error("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
   const handleRoleChange = async (userId, newRole) => {
     try {
       setUpdatingId(userId);
-      const res = await axios.patch('/api/admin/users', {
+      const res = await axios.patch("/api/admin/users", {
         userId,
         role: newRole,
       });
@@ -59,12 +59,14 @@ export default function AdminUsersPage() {
       if (res.data.success) {
         toast.success(`Role updated successfully to ${newRole.toUpperCase()}`);
         setUsers((prev) =>
-          prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
+          prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u)),
         );
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || 'Failed to update user role');
+      toast.error(
+        error.response?.data?.message || "Failed to update user role",
+      );
     } finally {
       setUpdatingId(null);
     }
@@ -76,12 +78,38 @@ export default function AdminUsersPage() {
     try {
       const res = await axios.delete(`/api/admin/users?userId=${userId}`);
       if (res.data.success) {
-        toast.success('User deleted successfully');
+        toast.success("User deleted successfully");
         setUsers((prev) => prev.filter((u) => u._id !== userId));
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to delete user');
+      toast.error("Failed to delete user");
+    }
+  };
+
+  const handleMarkFraud = async (userId, isFraud) => {
+    try {
+      setUpdatingId(userId);
+      const res = await axios.patch("/api/admin/users", {
+        userId,
+        isFraud,
+      });
+
+      if (res.data.success) {
+        toast.success(
+          isFraud ? "Vendor marked as fraud" : "Vendor unmarked as fraud",
+        );
+        setUsers((prev) =>
+          prev.map((u) => (u._id === userId ? { ...u, isFraud } : u)),
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "Failed to update fraud status",
+      );
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -95,7 +123,8 @@ export default function AdminUsersPage() {
             User & Vendor Role Management
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            View users, promote Users to Vendor/Admin, or manage permissions instantly.
+            View users, promote Users to Vendor/Admin, or manage permissions
+            instantly.
           </p>
         </div>
       </div>
@@ -104,7 +133,10 @@ export default function AdminUsersPage() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 p-4 shadow-sm">
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="flex-1 w-full relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -116,17 +148,17 @@ export default function AdminUsersPage() {
 
         {/* Role Filters */}
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
-          {['all', 'user', 'seller', 'admin'].map((role) => (
+          {["all", "user", "seller", "admin"].map((role) => (
             <button
               key={role}
               onClick={() => setRoleFilter(role)}
               className={`rounded-2xl px-4 py-2 text-xs font-bold capitalize transition ${
                 roleFilter === role
-                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md'
-                  : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                  ? "bg-linear-to-r from-amber-400 to-orange-500 text-white shadow-md"
+                  : "bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
               }`}
             >
-              {role === 'seller' ? 'Vendor / Seller' : role}
+              {role === "seller" ? "Vendor / Seller" : role}
             </button>
           ))}
         </div>
@@ -156,7 +188,10 @@ export default function AdminUsersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                 {users.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                  <tr
+                    key={user._id}
+                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition"
+                  >
                     {/* User info */}
                     <td className="py-4 font-medium text-gray-900 dark:text-white">
                       <div className="flex items-center gap-3">
@@ -167,8 +202,8 @@ export default function AdminUsersPage() {
                             className="w-10 h-10 rounded-full object-cover border border-amber-400/30"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold">
-                            {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                          <div className="w-10 h-10 rounded-full bg-linear-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold">
+                            {user.name?.charAt(0)?.toUpperCase() || "U"}
                           </div>
                         )}
                         <div>
@@ -176,7 +211,7 @@ export default function AdminUsersPage() {
                             {user.name}
                           </p>
                           <span className="text-xs text-gray-400 capitalize">
-                            Provider: {user.provider || 'Credentials'}
+                            Provider: {user.provider || "Credentials"}
                           </span>
                         </div>
                       </div>
@@ -185,28 +220,32 @@ export default function AdminUsersPage() {
                     {/* Email & Phone */}
                     <td className="py-4 text-gray-600 dark:text-gray-300">
                       <p>{user.email}</p>
-                      <p className="text-xs text-gray-400">{user.phone || 'No phone'}</p>
+                      <p className="text-xs text-gray-400">
+                        {user.phone || "No phone"}
+                      </p>
                     </td>
 
                     {/* Current Role Badge */}
                     <td className="py-4">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold capitalize ${
-                          user.role === 'admin'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300'
-                            : user.role === 'seller'
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
-                            : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+                          user.role === "admin"
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
+                            : user.role === "seller"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
                         }`}
                       >
-                        {user.role === 'admin' ? (
+                        {user.role === "admin" ? (
                           <Shield size={14} />
-                        ) : user.role === 'seller' ? (
+                        ) : user.role === "seller" ? (
                           <Store size={14} />
                         ) : (
                           <UserIcon size={14} />
                         )}
-                        {user.role === 'seller' ? 'Vendor' : user.role || 'user'}
+                        {user.role === "seller"
+                          ? "Vendor"
+                          : user.role || "user"}
                       </span>
                     </td>
 
@@ -214,8 +253,10 @@ export default function AdminUsersPage() {
                     <td className="py-4">
                       <select
                         disabled={updatingId === user._id}
-                        value={user.role || 'user'}
-                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                        value={user.role || "user"}
+                        onChange={(e) =>
+                          handleRoleChange(user._id, e.target.value)
+                        }
                         className="rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer disabled:opacity-50"
                       >
                         <option value="user">User (Customer)</option>
@@ -225,7 +266,22 @@ export default function AdminUsersPage() {
                     </td>
 
                     {/* Action buttons */}
-                    <td className="py-4 text-right">
+                    <td className="py-4 text-right space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-end sm:gap-2">
+                      {user.role === "seller" && (
+                        <button
+                          onClick={() =>
+                            handleMarkFraud(user._id, !user.isFraud)
+                          }
+                          disabled={updatingId === user._id}
+                          className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                            user.isFraud
+                              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                          }`}
+                        >
+                          {user.isFraud ? "Unmark Fraud" : "Mark Fraud"}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDeleteUser(user._id, user.name)}
                         className="rounded-xl p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition"

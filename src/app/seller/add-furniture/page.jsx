@@ -1,26 +1,35 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
-import { uploadImageToCloudinary } from '@/utils/cloudinary';
-import { PlusSquare, ImagePlus, Tag, DollarSign, Package, Layers } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { uploadImageToCloudinary } from "@/utils/cloudinary";
+import {
+  PlusSquare,
+  ImagePlus,
+  Tag,
+  DollarSign,
+  Package,
+  Layers,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const schema = z.object({
-  name: z.string().min(2, 'Product name is required'),
-  category: z.string().min(1, 'Category is required'),
-  price: z.string().min(1, 'Price is required'),
+  name: z.string().min(2, "Product name is required"),
+  category: z.string().min(1, "Category is required"),
+  price: z.string().min(1, "Price is required"),
   oldPrice: z.string().optional(),
-  stock: z.string().min(1, 'Stock quantity is required'),
+  stock: z.string().min(1, "Stock quantity is required"),
   material: z.string().optional(),
   dimensions: z.string().optional(),
-  description: z.string().min(10, 'Provide a description (at least 10 chars)'),
-  image: z.any().optional(),
+  description: z.string().min(10, "Provide a description (at least 10 chars)"),
+  images: z.any().refine((value) => {
+    return Array.isArray(value) ? value.length >= 3 : value?.length >= 3;
+  }, "Please upload at least 3 product images"),
 });
 
 export default function AddFurniturePage() {
@@ -36,9 +45,9 @@ export default function AddFurniturePage() {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      category: 'Sofa',
-      stock: '5',
-      material: 'Wood & Leather',
+      category: "Sofa",
+      stock: "5",
+      material: "Wood & Leather",
     },
   });
 
@@ -49,8 +58,8 @@ export default function AddFurniturePage() {
       let vendorEmail = session?.user?.email;
       let vendorName = session?.user?.name;
 
-      if (!vendorEmail && typeof window !== 'undefined') {
-        const stored = localStorage.getItem('user');
+      if (!vendorEmail && typeof window !== "undefined") {
+        const stored = localStorage.getItem("user");
         if (stored) {
           const parsed = JSON.parse(stored);
           vendorEmail = parsed.email;
@@ -59,19 +68,21 @@ export default function AddFurniturePage() {
       }
 
       if (!vendorEmail) {
-        toast.error('Vendor email not found. Please log in.');
+        toast.error("Vendor email not found. Please log in.");
         return;
       }
 
-      let imageUrl = '';
-      if (data.image?.[0]) {
-        imageUrl = await uploadImageToCloudinary(data.image[0]);
-      } else {
-        imageUrl =
-          'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=800&auto=format&fit=crop';
+      const imageFiles = data.images ? Array.from(data.images) : [];
+      if (imageFiles.length < 3) {
+        toast.error("Please upload at least 3 product images.");
+        return;
       }
 
-      const res = await axios.post('/api/seller/furniture', {
+      const imageUrls = await Promise.all(
+        imageFiles.map((file) => uploadImageToCloudinary(file)),
+      );
+
+      const res = await axios.post("/api/seller/furniture", {
         name: data.name,
         category: data.category,
         price: data.price,
@@ -80,19 +91,20 @@ export default function AddFurniturePage() {
         material: data.material,
         dimensions: data.dimensions,
         description: data.description,
-        image: imageUrl,
+        images: imageUrls,
+        image: imageUrls[0],
         vendorEmail,
         vendorName,
       });
 
       if (res.data.success) {
-        toast.success('Furniture item added successfully!');
+        toast.success("Furniture item added successfully!");
         reset();
-        router.push('/seller/my-furniture');
+        router.push("/seller/my-furniture");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || 'Failed to add furniture');
+      toast.error(error.response?.data?.message || "Failed to add furniture");
     } finally {
       setLoading(false);
     }
@@ -106,7 +118,8 @@ export default function AddFurniturePage() {
           Add New Furniture Listing
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          List a new product in the marketplace catalog for customers to purchase.
+          List a new product in the marketplace catalog for customers to
+          purchase.
         </p>
       </div>
 
@@ -123,10 +136,12 @@ export default function AddFurniturePage() {
             <input
               type="text"
               placeholder="e.g. Modern Velvet Armchair"
-              {...register('name')}
+              {...register("name")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
-            {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Category */}
@@ -135,7 +150,7 @@ export default function AddFurniturePage() {
               Category *
             </label>
             <select
-              {...register('category')}
+              {...register("category")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition cursor-pointer"
             >
               <option value="Sofa">Sofa</option>
@@ -155,10 +170,14 @@ export default function AddFurniturePage() {
             <input
               type="number"
               placeholder="5"
-              {...register('stock')}
+              {...register("stock")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
-            {errors.stock && <p className="mt-1 text-xs text-red-400">{errors.stock.message}</p>}
+            {errors.stock && (
+              <p className="mt-1 text-xs text-red-400">
+                {errors.stock.message}
+              </p>
+            )}
           </div>
 
           {/* Price */}
@@ -169,10 +188,14 @@ export default function AddFurniturePage() {
             <input
               type="number"
               placeholder="15000"
-              {...register('price')}
+              {...register("price")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
-            {errors.price && <p className="mt-1 text-xs text-red-400">{errors.price.message}</p>}
+            {errors.price && (
+              <p className="mt-1 text-xs text-red-400">
+                {errors.price.message}
+              </p>
+            )}
           </div>
 
           {/* Old Price */}
@@ -183,7 +206,7 @@ export default function AddFurniturePage() {
             <input
               type="number"
               placeholder="18000"
-              {...register('oldPrice')}
+              {...register("oldPrice")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
           </div>
@@ -196,7 +219,7 @@ export default function AddFurniturePage() {
             <input
               type="text"
               placeholder="Teak Wood / Fabric"
-              {...register('material')}
+              {...register("material")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
           </div>
@@ -209,7 +232,7 @@ export default function AddFurniturePage() {
             <input
               type="text"
               placeholder="e.g. 72 x 36 x 32 inches"
-              {...register('dimensions')}
+              {...register("dimensions")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
           </div>
@@ -222,25 +245,38 @@ export default function AddFurniturePage() {
             <textarea
               rows={4}
               placeholder="Detailed description of craftsmanship, features, and warranty details..."
-              {...register('description')}
+              {...register("description")}
               className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3.5 text-sm text-gray-900 dark:text-white outline-none focus:border-amber-400 transition"
             />
             {errors.description && (
-              <p className="mt-1 text-xs text-red-400">{errors.description.message}</p>
+              <p className="mt-1 text-xs text-red-400">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
-          {/* Product Image */}
+          {/* Product Images */}
           <div className="sm:col-span-2">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              <ImagePlus size={18} className="text-amber-500" /> Upload Product Image
+              <ImagePlus size={18} className="text-amber-500" /> Upload Product
+              Images
             </label>
             <input
               type="file"
               accept="image/*"
-              {...register('image')}
+              multiple
+              {...register("images")}
               className="w-full text-sm text-gray-500 file:mr-4 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-amber-400 file:to-orange-500 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:opacity-90 cursor-pointer"
             />
+            {errors.images && (
+              <p className="mt-1 text-xs text-red-400">
+                {errors.images.message}
+              </p>
+            )}
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Upload at least 3 images so customers can see the product from
+              multiple angles.
+            </p>
           </div>
         </div>
 
@@ -249,7 +285,7 @@ export default function AddFurniturePage() {
           disabled={loading}
           className="w-full sm:w-auto rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.02] disabled:opacity-50 cursor-pointer"
         >
-          {loading ? 'Adding Product...' : 'Publish Product Listing'}
+          {loading ? "Adding Product..." : "Publish Product Listing"}
         </button>
       </form>
     </div>

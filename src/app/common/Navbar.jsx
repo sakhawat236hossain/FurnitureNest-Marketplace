@@ -75,6 +75,10 @@ export default function Navbar() {
       <Link href="/contact" className="hover:text-amber-500 transition">
         Contact
       </Link>
+
+      <Link href="/cart" className="hover:text-amber-500 transition">
+        Cart
+      </Link>
     </>
   );
 

@@ -10,7 +10,7 @@ export async function GET(request) {
 
     const usersCollection = await dbConnect(collections.USERS);
 
-    let query = {};
+    const query = {};
     if (roleFilter && roleFilter !== "all") {
       query.role = roleFilter;
     }
@@ -31,30 +31,39 @@ export async function GET(request) {
     console.error("Admin Users GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch users" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(request) {
   try {
-    const { userId, role, status } = await request.json();
+    const { userId, role, status, isFraud } = await request.json();
 
     if (!userId) {
       return NextResponse.json(
         { success: false, message: "userId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const usersCollection = await dbConnect(collections.USERS);
+    const furnitureCollection = await dbConnect(collections.FURNITURE);
+
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 },
+      );
+    }
 
     const updateFields = {};
     if (role) {
       if (!["user", "seller", "admin"].includes(role)) {
         return NextResponse.json(
           { success: false, message: "Invalid role value" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       updateFields.role = role;
@@ -62,17 +71,27 @@ export async function PATCH(request) {
     if (status) {
       updateFields.status = status;
     }
+    if (typeof isFraud === "boolean") {
+      updateFields.isFraud = isFraud;
+    }
     updateFields.updatedAt = new Date();
 
     const result = await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
-      { $set: updateFields }
+      { $set: updateFields },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404 }
+        { status: 404 },
+      );
+    }
+
+    if (typeof isFraud === "boolean") {
+      await furnitureCollection.updateMany(
+        { vendorEmail: user.email },
+        { $set: { hidden: isFraud } },
       );
     }
 
@@ -84,7 +103,7 @@ export async function PATCH(request) {
     console.error("Admin Users PATCH Error:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Failed to update user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -97,17 +116,19 @@ export async function DELETE(request) {
     if (!userId) {
       return NextResponse.json(
         { success: false, message: "userId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const usersCollection = await dbConnect(collections.USERS);
-    const result = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
+    const result = await usersCollection.deleteOne({
+      _id: new ObjectId(userId),
+    });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -119,7 +140,7 @@ export async function DELETE(request) {
     console.error("Admin Users DELETE Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

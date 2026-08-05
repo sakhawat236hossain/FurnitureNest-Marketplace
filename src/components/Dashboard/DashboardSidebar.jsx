@@ -38,12 +38,10 @@ const sellerMenu = [
 ];
 
 const adminMenu = [
-  { name: "Admin Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "All Furniture", href: "/admin/furniture", icon: Package },
-  { name: "Orders", href: "/admin/orders", icon: ClipboardList },
-  { name: "Reports", href: "/admin/reports", icon: BarChart3 },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Admin Profile", href: "/admin/profile", icon: User },
+  { name: "Manage Furniture", href: "/admin/furniture", icon: Package },
+  { name: "Manage Users", href: "/admin/users", icon: Users },
+  { name: "Featured Items", href: "/admin/featured", icon: Sparkles },
 ];
 
 export default function DashboardSidebar() {
@@ -52,6 +50,10 @@ export default function DashboardSidebar() {
 
   const [mounted, setMounted] = useState(false);
   const [role, setRole] = useState("user");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -118,7 +120,7 @@ export default function DashboardSidebar() {
     <aside className="w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 p-5 min-h-screen flex flex-col justify-between">
       <div>
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
             F
           </div>
           <div>
@@ -146,7 +148,7 @@ export default function DashboardSidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   active
-                    ? "bg-linear-to-r from-amber-400 to-orange-500 text-white shadow-md"
+                    ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md"
                     : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5"
                 }`}
               >

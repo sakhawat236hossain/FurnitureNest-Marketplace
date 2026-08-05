@@ -1,46 +1,16 @@
-import React from 'react';
-import Link from 'next/link';
+import Link from "next/link";
+import { dbConnect, collections } from "@/lib/dbConnect";
+import AddToCartButton from "@/components/Cart/AddToCartButton";
+import AddToWishlistButton from "@/components/Wishlist/AddToWishlistButton";
 
-const products = [
-  {
-    id: 1,
-    name: 'Luxury Velvet Sofa',
-    price: '৳25,000',
-    oldPrice: '৳30,000',
-    image:
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=900&auto=format&fit=crop',
-    rating: 4.9,
-  },
-  {
-    id: 2,
-    name: 'Modern Wooden Chair',
-    price: '৳8,500',
-    oldPrice: '৳10,000',
-    image:
-      'https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=900&auto=format&fit=crop',
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    name: 'Premium Dining Table',
-    price: '৳18,000',
-    oldPrice: '৳22,000',
-    image:
-      'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=900&auto=format&fit=crop',
-    rating: 5.0,
-  },
-  {
-    id: 4,
-    name: 'Elegant Bedroom Set',
-    price: '৳45,000',
-    oldPrice: '৳52,000',
-    image:
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=900&auto=format&fit=crop',
-    rating: 4.7,
-  },
-];
+export default async function FeaturedSection() {
+  const furnitureCollection = await dbConnect(collections.FURNITURE);
+  const products = await furnitureCollection
+    .find({ featured: true, status: "approved", hidden: { $ne: true } })
+    .sort({ createdAt: -1 })
+    .limit(4)
+    .toArray();
 
-export default function FeaturedSection() {
   return (
     <section className="relative overflow-hidden py-20 bg-white dark:bg-slate-950 transition-colors duration-300">
       {/* Decorative blur */}
@@ -79,71 +49,89 @@ export default function FeaturedSection() {
 
         {/* Products Grid */}
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="group relative overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-none backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/10 dark:hover:border-amber-400/20"
-            >
-              {/* Discount badge */}
-              <div className="absolute left-4 top-4 z-20 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                -15%
-              </div>
-
-              {/* Wishlist button */}
-              <button className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/80 text-gray-700 dark:text-gray-200 backdrop-blur border border-gray-200 dark:border-white/10 transition hover:bg-amber-400 hover:text-black">
-                ♥
-              </button>
-
-              {/* Image */}
-              <div className="overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="h-64 w-full object-cover transition duration-500 group-hover:scale-110"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-5">
-                {/* Rating */}
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-amber-400">★★★★★</span>
-                  <span className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-                    {product.rating}
-                  </span>
+          {products.length > 0 ? (
+            products.map((product) => (
+              <div
+                key={product._id.toString()}
+                className="group relative overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-none backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/10 dark:hover:border-amber-400/20"
+              >
+                {/* Discount badge */}
+                <div className="absolute left-4 top-4 z-20 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                  Featured
                 </div>
 
-                <h3 className="mt-3 text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
-                  {product.name}
-                </h3>
-
-                {/* Price */}
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-xl font-extrabold text-gray-900 dark:text-white transition-colors duration-300">
-                    {product.price}
-                  </span>
-
-                  <span className="text-sm text-gray-400 line-through">
-                    {product.oldPrice}
-                  </span>
+                {/* Image */}
+                <div className="overflow-hidden">
+                  <img
+                    src={
+                      product.images?.[0] || product.image || "/placeholder.png"
+                    }
+                    alt={product.name}
+                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-110"
+                  />
                 </div>
 
-                {/* Buttons */}
-                <div className="mt-5 flex gap-2">
-                  <Link
-                    href={`/product/${product.id}`}
-                    className="flex-1 rounded-xl border border-gray-300 dark:border-white/10 px-4 py-2 text-center text-sm font-semibold text-gray-900 dark:text-white transition hover:border-amber-400 hover:text-amber-500 dark:hover:border-amber-400 dark:hover:text-amber-300"
-                  >
-                    Details
-                  </Link>
+                {/* Content */}
+                <div className="p-5">
+                  {/* Rating */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-amber-400">★★★★★</span>
+                    <span className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+                      {product.rating ?? "4.8"}
+                    </span>
+                  </div>
 
-                  <button className="flex-1 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.02] hover:shadow-orange-500/40">
-                    Add
-                  </button>
+                  <h3 className="mt-3 text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                    {product.name}
+                  </h3>
+
+                  {/* Price */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="text-xl font-extrabold text-gray-900 dark:text-white transition-colors duration-300">
+                      {typeof product.price === "number"
+                        ? `৳${product.price.toLocaleString()}`
+                        : product.price || "৳0"}
+                    </span>
+
+                    {product.oldPrice && (
+                      <span className="text-sm text-gray-400 line-through">
+                        {typeof product.oldPrice === "number"
+                          ? `৳${product.oldPrice.toLocaleString()}`
+                          : product.oldPrice}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                    <Link
+                      href={
+                        product._id ? `/product/${product._id.toString()}` : "#"
+                      }
+                      className="flex-1 rounded-xl border border-gray-300 dark:border-white/10 px-4 py-2 text-center text-sm font-semibold text-gray-900 dark:text-white transition hover:border-amber-400 hover:text-amber-500 dark:hover:border-amber-400 dark:hover:text-amber-300"
+                    >
+                      Details
+                    </Link>
+
+                    <div className="flex gap-2 flex-1 flex-wrap">
+                      <div className="flex-1 min-w-[10rem]">
+                        <AddToCartButton product={product} />
+                      </div>
+                      <div className="flex-1 min-w-[10rem]">
+                        <AddToWishlistButton product={product} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="sm:col-span-2 lg:col-span-4 rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-10 text-center">
+              <p className="text-gray-600 dark:text-gray-400">
+                No featured furniture available right now.
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Bottom CTA */}

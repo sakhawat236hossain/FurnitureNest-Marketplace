@@ -9,7 +9,7 @@ export async function GET(request) {
     if (!email) {
       return NextResponse.json(
         { success: false, message: "Vendor email is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function GET(request) {
     console.error("Seller Furniture GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch vendor furniture" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -33,10 +33,34 @@ export async function POST(request) {
   try {
     const data = await request.json();
 
-    if (!data.name || !data.price || !data.vendorEmail) {
+    if (
+      !data.name ||
+      !data.price ||
+      !data.vendorEmail ||
+      !Array.isArray(data.images) ||
+      data.images.length < 3
+    ) {
       return NextResponse.json(
-        { success: false, message: "Name, price, and vendor email are required" },
-        { status: 400 }
+        {
+          success: false,
+          message:
+            "Name, price, vendor email, and at least 3 images are required",
+        },
+        { status: 400 },
+      );
+    }
+
+    const usersCollection = await dbConnect(collections.USERS);
+    const seller = await usersCollection.findOne({ email: data.vendorEmail });
+
+    if (seller?.isFraud) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "This seller has been marked as fraud and cannot add new items",
+        },
+        { status: 403 },
       );
     }
 
@@ -51,12 +75,20 @@ export async function POST(request) {
       description: data.description || "",
       material: data.material || "Wood",
       dimensions: data.dimensions || "",
-      image: data.image || "",
+      images: Array.isArray(data.images)
+        ? data.images
+        : data.images
+          ? [data.images]
+          : [],
+      image: data.image || (Array.isArray(data.images) ? data.images[0] : ""),
       vendorEmail: data.vendorEmail,
       vendorName: data.vendorName || "Vendor",
-      status: "approved", // default status for listed item
+      status: "approved",
       inStock: true,
+      hidden: false,
+      featured: false,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const result = await furnitureCollection.insertOne(newItem);
@@ -70,7 +102,7 @@ export async function POST(request) {
     console.error("Seller Furniture POST Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to add furniture" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -82,7 +114,7 @@ export async function PATCH(request) {
     if (!itemId) {
       return NextResponse.json(
         { success: false, message: "itemId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,13 +123,13 @@ export async function PATCH(request) {
 
     const result = await furnitureCollection.updateOne(
       { _id: new ObjectId(itemId) },
-      { $set: updateData }
+      { $set: updateData },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { success: false, message: "Item not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -109,7 +141,7 @@ export async function PATCH(request) {
     console.error("Seller Furniture PATCH Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update furniture" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -122,17 +154,19 @@ export async function DELETE(request) {
     if (!itemId) {
       return NextResponse.json(
         { success: false, message: "itemId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const furnitureCollection = await dbConnect(collections.FURNITURE);
-    const result = await furnitureCollection.deleteOne({ _id: new ObjectId(itemId) });
+    const result = await furnitureCollection.deleteOne({
+      _id: new ObjectId(itemId),
+    });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
         { success: false, message: "Item not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -144,7 +178,7 @@ export async function DELETE(request) {
     console.error("Seller Furniture DELETE Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete furniture" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
