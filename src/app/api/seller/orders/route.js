@@ -9,13 +9,13 @@ export async function GET(request) {
     if (!email) {
       return NextResponse.json(
         { success: false, message: "Vendor email is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
     const orders = await ordersCollection
-      .find({ "items.vendorEmail": email })
+      .find({ "items.vendorEmail": email, approvedByAdmin: true })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -24,7 +24,7 @@ export async function GET(request) {
     console.error("Seller Orders GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch vendor orders" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -36,20 +36,20 @@ export async function PATCH(request) {
     if (!orderId || !status) {
       return NextResponse.json(
         { success: false, message: "orderId and status are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
     const result = await ordersCollection.updateOne(
       { _id: new ObjectId(orderId) },
-      { $set: { status, updatedAt: new Date() } }
+      { $set: { status, updatedAt: new Date() } },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -61,7 +61,7 @@ export async function PATCH(request) {
     console.error("Seller Orders PATCH Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update order status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

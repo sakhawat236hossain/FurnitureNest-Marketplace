@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { dbConnect, collections } from "@/lib/dbConnect";
-import AddToCartButton from "@/components/Cart/AddToCartButton";
+import OrderButton from "@/components/Order/OrderButton";
 import AddToWishlistButton from "@/components/Wishlist/AddToWishlistButton";
 
 export default async function FeaturedSection() {
@@ -115,7 +115,7 @@ export default async function FeaturedSection() {
 
                     <div className="flex gap-2 flex-1 flex-wrap">
                       <div className="flex-1 min-w-[10rem]">
-                        <AddToCartButton product={product} />
+                        <OrderButton product={product} />
                       </div>
                       <div className="flex-1 min-w-[10rem]">
                         <AddToWishlistButton product={product} />

@@ -8,7 +8,7 @@ export async function GET(request) {
     if (!email) {
       return NextResponse.json(
         { success: false, message: "User email is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,7 +23,7 @@ export async function GET(request) {
     console.error("User Orders GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch user orders" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -34,8 +34,11 @@ export async function POST(request) {
 
     if (!data.userEmail || !data.items || !data.totalPrice) {
       return NextResponse.json(
-        { success: false, message: "userEmail, items, and totalPrice are required" },
-        { status: 400 }
+        {
+          success: false,
+          message: "userEmail, items, and totalPrice are required",
+        },
+        { status: 400 },
       );
     }
 
@@ -50,6 +53,7 @@ export async function POST(request) {
       totalPrice: Number(data.totalPrice),
       paymentMethod: data.paymentMethod || "Cash on Delivery",
       status: "pending",
+      approvedByAdmin: false,
       createdAt: new Date(),
     };
 
@@ -64,7 +68,7 @@ export async function POST(request) {
     console.error("User Orders POST Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to place order" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

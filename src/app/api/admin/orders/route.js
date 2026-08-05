@@ -16,45 +16,53 @@ export async function GET() {
     console.error("Admin Orders GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch orders" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(request) {
   try {
-    const { orderId, status } = await request.json();
+    const { orderId, status, approvedByAdmin } = await request.json();
 
-    if (!orderId || !status) {
+    if (!orderId || (status === undefined && approvedByAdmin === undefined)) {
       return NextResponse.json(
-        { success: false, message: "orderId and status are required" },
-        { status: 400 }
+        {
+          success: false,
+          message: "orderId and at least one update field are required",
+        },
+        { status: 400 },
       );
     }
+
+    const updateData = { updatedAt: new Date() };
+    if (status !== undefined) updateData.status = status;
+    if (approvedByAdmin !== undefined)
+      updateData.approvedByAdmin = approvedByAdmin;
 
     const ordersCollection = await dbConnect(collections.ORDERS);
 
     const result = await ordersCollection.updateOne(
       { _id: new ObjectId(orderId) },
-      { $set: { status, updatedAt: new Date() } }
+      { $set: updateData },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Order status updated successfully",
+      message: "Order updated successfully",
     });
   } catch (error) {
     console.error("Admin Orders PATCH Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update order status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -8,7 +8,7 @@ export async function GET(request) {
     if (!email) {
       return NextResponse.json(
         { success: false, message: "Vendor email is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -20,17 +20,17 @@ export async function GET(request) {
     });
 
     const vendorOrders = await ordersCollection
-      .find({ "items.vendorEmail": email })
+      .find({ "items.vendorEmail": email, approvedByAdmin: true })
       .toArray();
 
     const totalOrders = vendorOrders.length;
     const pendingOrders = vendorOrders.filter(
-      (o) => o.status === "pending" || o.status === "processing"
+      (o) => o.status === "pending" || o.status === "processing",
     ).length;
 
     const totalEarnings = vendorOrders.reduce(
       (acc, curr) => acc + (Number(curr.totalPrice) || 0),
-      0
+      0,
     );
 
     return NextResponse.json({
@@ -46,7 +46,7 @@ export async function GET(request) {
     console.error("Seller Stats GET Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch seller stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

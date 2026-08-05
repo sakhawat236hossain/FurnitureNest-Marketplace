@@ -80,6 +80,40 @@ export default function OrdersPage() {
                   {order.status || "pending"}
                 </span>
               </div>
+
+              <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-gray-700 dark:bg-slate-950 dark:text-gray-300">
+                <p>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Name:
+                  </span>{" "}
+                  {order.userName || "N/A"}
+                </p>
+                <p className="mt-1">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Email:
+                  </span>{" "}
+                  {order.userEmail || "N/A"}
+                </p>
+                <p className="mt-1">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Phone:
+                  </span>{" "}
+                  {order.userPhone || "N/A"}
+                </p>
+                <p className="mt-1">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Address:
+                  </span>{" "}
+                  {order.shippingAddress || "N/A"}
+                </p>
+                <p className="mt-1">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Payment:
+                  </span>{" "}
+                  {order.paymentMethod || "Cash on Delivery"}
+                </p>
+              </div>
+
               <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
                 <p>{order.items?.length || 0} item(s)</p>
                 <p className="mt-1 font-semibold text-gray-900 dark:text-white">

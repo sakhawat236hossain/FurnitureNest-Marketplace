@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ObjectId } from "mongodb";
 import { dbConnect, collections } from "@/lib/dbConnect";
-import AddToCartButton from "@/components/Cart/AddToCartButton";
+import OrderButton from "@/components/Order/OrderButton";
 import AddToWishlistButton from "@/components/Wishlist/AddToWishlistButton";
 
 export default async function ProductPage({ params }) {
@@ -152,7 +152,7 @@ export default async function ProductPage({ params }) {
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <AddToCartButton product={product} />
+                  <OrderButton product={product} />
                   <AddToWishlistButton product={product} />
                 </div>
                 <Link

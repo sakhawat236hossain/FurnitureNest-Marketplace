@@ -2,14 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "sonner";
 
 export default function CartPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    paymentMethod: "Cash on Delivery",
+  });
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -26,6 +36,12 @@ export default function CartPage() {
         setLoading(false);
         return;
       }
+
+      setForm((prev) => ({
+        ...prev,
+        email,
+        name: session?.user?.name || prev.name,
+      }));
 
       try {
         const res = await axios.get(
@@ -51,6 +67,57 @@ export default function CartPage() {
     } catch (error) {
       console.error(error);
       toast.error("Unable to remove item");
+    }
+  };
+
+  const handlePlaceOrder = async (event) => {
+    event.preventDefault();
+
+    if (!form.name || !form.email || !form.phone || !form.address) {
+      toast.error("Please fill in all shipping details.");
+      return;
+    }
+
+    if (items.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    setPlacingOrder(true);
+
+    try {
+      const totalPrice = items.reduce(
+        (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
+        0,
+      );
+
+      const res = await axios.post("/api/user/orders", {
+        userEmail: form.email,
+        userName: form.name,
+        userPhone: form.phone,
+        shippingAddress: form.address,
+        items,
+        totalPrice,
+        paymentMethod: form.paymentMethod,
+      });
+
+      if (!res.data.success) {
+        toast.error(res.data.message || "Unable to place order.");
+        return;
+      }
+
+      await Promise.all(
+        items.map((item) => axios.delete(`/api/user/cart?id=${item._id}`)),
+      );
+
+      setItems([]);
+      toast.success("Order placed successfully.");
+      router.push("/dashboard/orders");
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to place order.");
+    } finally {
+      setPlacingOrder(false);
     }
   };
 
@@ -153,13 +220,82 @@ export default function CartPage() {
                         ৳{total.toLocaleString()}
                       </span>
                     </div>
-                    <div className="rounded-2xl bg-slate-100 p-4 dark:bg-slate-950">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Checkout is not implemented yet, but your cart items are
-                        stored.
-                      </p>
-                    </div>
                   </div>
+
+                  <form onSubmit={handlePlaceOrder} className="mt-8 space-y-4">
+                    <div className="grid gap-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Full name
+                        <input
+                          value={form.name}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              name: event.target.value,
+                            }))
+                          }
+                          className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-200 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:focus:border-amber-300 dark:focus:ring-amber-500/20"
+                          placeholder="Your name"
+                        />
+                      </label>
+
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email address
+                        <input
+                          type="email"
+                          value={form.email}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              email: event.target.value,
+                            }))
+                          }
+                          className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-200 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:focus:border-amber-300 dark:focus:ring-amber-500/20"
+                          placeholder="you@example.com"
+                        />
+                      </label>
+
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Phone number
+                        <input
+                          type="tel"
+                          value={form.phone}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              phone: event.target.value,
+                            }))
+                          }
+                          className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-200 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:focus:border-amber-300 dark:focus:ring-amber-500/20"
+                          placeholder="01XXXXXXXXX"
+                        />
+                      </label>
+
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Shipping address
+                        <textarea
+                          value={form.address}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              address: event.target.value,
+                            }))
+                          }
+                          className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-200 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:focus:border-amber-300 dark:focus:ring-amber-500/20"
+                          placeholder="Street address, city, postal code"
+                          rows={4}
+                        />
+                      </label>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={placingOrder}
+                      className="w-full rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {placingOrder ? "Placing order..." : "Place order"}
+                    </button>
+                  </form>
                 </aside>
               </div>
             </div>

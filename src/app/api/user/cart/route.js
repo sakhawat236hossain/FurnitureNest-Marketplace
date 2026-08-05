@@ -70,6 +70,7 @@ export async function POST(request) {
       image: furnitureItem.image,
       category: furnitureItem.category,
       vendorName: furnitureItem.vendorName,
+      vendorEmail: furnitureItem.vendorEmail,
       quantity: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
