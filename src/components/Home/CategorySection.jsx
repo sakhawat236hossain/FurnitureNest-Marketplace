@@ -1,38 +1,54 @@
 import Link from "next/link";
 import { dbConnect, collections } from "@/lib/dbConnect";
 
-const categoryImages = {
-  Sofa: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=900&auto=format&fit=crop",
-  Chair:
-    "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=900&auto=format&fit=crop",
-  Dining:
-    "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=900&auto=format&fit=crop",
-  Bedroom:
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=900&auto=format&fit=crop",
-  Office:
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=900&auto=format&fit=crop",
-  Outdoor:
-    "https://images.unsplash.com/photo-1449247613801-ab06418e2861?q=80&w=900&auto=format&fit=crop",
-};
-
-function getImageForCategory(name) {
-  return (
-    categoryImages[name] ||
-    "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=900&auto=format&fit=crop"
-  );
-}
-
 export default async function CategorySection() {
+  const categoryCollection = await dbConnect(collections.CATEGORIES);
   const furnitureCollection = await dbConnect(collections.FURNITURE);
-  const rawCategories = await furnitureCollection
+
+  // 1. Fetch categories from admin categories collection in MongoDB
+  const dbCategories = await categoryCollection
+    .find({ status: "active" })
+    .sort({ featured: -1, createdAt: -1 })
+    .limit(6)
+    .toArray();
+
+  // 2. Fetch unique categories from approved furniture products in MongoDB
+  const rawProductCategories = await furnitureCollection
     .find({ status: "approved", hidden: { $ne: true } })
     .project({ category: 1 })
     .toArray();
 
-  const categories = [
-    ...new Set(rawCategories.map((item) => item.category).filter(Boolean)),
+  const productCategoryNames = [
+    ...new Set(rawProductCategories.map((item) => item.category).filter(Boolean)),
   ];
-  const filteredCategories = categories.slice(0, 6);
+
+  // Combine database categories dynamically
+  const categoriesMap = new Map();
+
+  dbCategories.forEach((cat) => {
+    if (cat.name) {
+      categoriesMap.set(cat.name.toLowerCase().trim(), {
+        name: cat.name,
+        image: cat.image || "/placeholder.png",
+        slug: cat.slug || cat.name.toLowerCase().trim(),
+        featured: Boolean(cat.featured),
+      });
+    }
+  });
+
+  productCategoryNames.forEach((catName) => {
+    const key = catName.toLowerCase().trim();
+    if (!categoriesMap.has(key)) {
+      categoriesMap.set(key, {
+        name: catName,
+        image: "/placeholder.png",
+        slug: catName.toLowerCase().trim(),
+        featured: false,
+      });
+    }
+  });
+
+  const categoryList = Array.from(categoriesMap.values()).slice(0, 6);
 
   return (
     <section className="relative overflow-hidden py-20 bg-gradient-to-b from-white via-gray-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-300">
@@ -62,18 +78,18 @@ export default async function CategorySection() {
 
         {/* Grid */}
         <div className="mt-14 grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCategories.length > 0 ? (
-            filteredCategories.map((name) => (
+          {categoryList.length > 0 ? (
+            categoryList.map((cat) => (
               <Link
-                key={name}
-                href={`/categories?category=${encodeURIComponent(name.toLowerCase())}`}
+                key={cat.name}
+                href={`/categories?category=${encodeURIComponent(cat.slug || cat.name.toLowerCase())}`}
                 className="group relative overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-none backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/10 dark:hover:border-amber-400/20"
               >
                 {/* Image */}
                 <div className="overflow-hidden">
                   <img
-                    src={getImageForCategory(name)}
-                    alt={name}
+                    src={cat.image}
+                    alt={cat.name}
                     className="h-44 w-full object-cover transition duration-500 group-hover:scale-110 sm:h-56 lg:h-64"
                   />
                 </div>
@@ -85,7 +101,7 @@ export default async function CategorySection() {
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold">{name}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold">{cat.name}</h3>
 
                       <p className="mt-1 text-xs sm:text-sm text-gray-200">
                         Explore Collection
@@ -99,16 +115,21 @@ export default async function CategorySection() {
                 </div>
 
                 {/* Top badge */}
-                <div className="absolute left-4 top-4 rounded-full bg-white/90 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 backdrop-blur px-3 py-1 text-xs font-semibold transition-colors duration-300">
-                  New
-                </div>
+                {cat.featured ? (
+                  <div className="absolute left-4 top-4 rounded-full bg-amber-500 text-white backdrop-blur px-3 py-1 text-xs font-semibold shadow-md">
+                    Featured
+                  </div>
+                ) : (
+                  <div className="absolute left-4 top-4 rounded-full bg-white/90 dark:bg-slate-900/80 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 backdrop-blur px-3 py-1 text-xs font-semibold transition-colors duration-300">
+                    Category
+                  </div>
+                )}
               </Link>
             ))
           ) : (
             <div className="sm:col-span-2 lg:col-span-3 rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-10 text-center">
               <p className="text-gray-600 dark:text-gray-400">
-                No categories found yet. Add products to start building the
-                marketplace categories.
+                No categories found in database yet. Add categories from Admin Dashboard.
               </p>
             </div>
           )}

@@ -15,13 +15,23 @@ export default async function CategoriesPage({ searchParams }) {
     : "";
 
   const furnitureCollection = await dbConnect(collections.FURNITURE);
-  const rawCategories = await furnitureCollection
+  const categoryCollection = await dbConnect(collections.CATEGORIES);
+
+  const registeredCategories = await categoryCollection
+    .find({ status: "active" })
+    .project({ name: 1 })
+    .toArray();
+
+  const rawProductCategories = await furnitureCollection
     .find({ status: "approved", hidden: { $ne: true } })
     .project({ category: 1 })
     .toArray();
 
   const categories = [
-    ...new Set(rawCategories.map((item) => item.category).filter(Boolean)),
+    ...new Set([
+      ...registeredCategories.map((item) => item.name),
+      ...rawProductCategories.map((item) => item.category),
+    ].filter(Boolean)),
   ];
 
   const query = {

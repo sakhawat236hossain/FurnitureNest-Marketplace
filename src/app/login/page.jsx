@@ -23,6 +23,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -42,17 +43,29 @@ export default function LoginPage() {
 
       const activeSession = await getSession();
       const role = activeSession?.user?.role?.toLowerCase();
+
       toast.success("Login successful");
+
       router.replace(
         role === "admin"
           ? "/admin"
           : role === "seller"
             ? "/seller"
-            : "/dashboard/user",
+            : "/dashboard/user"
       );
     } catch (error) {
       toast.error(error.message || "Login failed");
     }
+  };
+
+  // Demo login function
+  const demoLogin = async (email) => {
+    const password = "Ab1234";
+
+    setValue("email", email);
+    setValue("password", password);
+
+    await onSubmit({ email, password });
   };
 
   return (
@@ -64,7 +77,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative w-full max-w-md rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+        className="relative w-full max-w-2xl rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
       >
         {/* Header */}
         <div className="text-center">
@@ -72,11 +85,52 @@ export default function LoginPage() {
             F
           </div>
 
-          <h1 className="mt-4 text-3xl font-black text-white">Welcome Back</h1>
+          <h1 className="mt-4 text-3xl font-black text-white">
+            Welcome Back
+          </h1>
 
           <p className="mt-2 text-gray-400">
             Login to continue shopping premium furniture
           </p>
+        </div>
+
+        {/* Demo Login Cards */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => demoLogin("admin@gmail.com")}
+            className="rounded-2xl border border-amber-400/20 bg-white/5 p-4 text-left hover:border-amber-400 hover:bg-white/10 transition duration-300"
+          >
+            <p className="text-xs text-gray-400">Admin Login</p>
+            <p className="text-sm font-semibold text-white truncate">
+              admin@gmail.com
+            </p>
+            <p className="text-xs text-amber-400 mt-1">Pass: Ab1234</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => demoLogin("seller@gmail.com")}
+            className="rounded-2xl border border-amber-400/20 bg-white/5 p-4 text-left hover:border-amber-400 hover:bg-white/10 transition duration-300"
+          >
+            <p className="text-xs text-gray-400">Seller Login</p>
+            <p className="text-sm font-semibold text-white truncate">
+              seller@gmail.com
+            </p>
+            <p className="text-xs text-amber-400 mt-1">Pass: Ab1234</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => demoLogin("user@gmail.com")}
+            className="rounded-2xl border border-amber-400/20 bg-white/5 p-4 text-left hover:border-amber-400 hover:bg-white/10 transition duration-300"
+          >
+            <p className="text-xs text-gray-400">User Login</p>
+            <p className="text-sm font-semibold text-white truncate">
+              user@gmail.com
+            </p>
+            <p className="text-xs text-amber-400 mt-1">Pass: Ab1234</p>
+          </button>
         </div>
 
         {/* Google Login */}
@@ -126,7 +180,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-400">
-          Don&apos;t have an account?{" "}
+          Don't have an account?{" "}
           <Link
             href="/register"
             className="text-amber-400 hover:text-amber-300 font-medium transition"

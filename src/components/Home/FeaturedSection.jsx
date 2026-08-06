@@ -5,11 +5,13 @@ import { Sparkles, ArrowRight } from "lucide-react";
 
 export default async function FeaturedSection() {
   const furnitureCollection = await dbConnect(collections.FURNITURE);
-  const products = await furnitureCollection
+  const rawProducts = await furnitureCollection
     .find({ featured: true, status: "approved", hidden: { $ne: true } })
     .sort({ createdAt: -1 })
     .limit(4)
     .toArray();
+
+  const products = rawProducts.map((doc) => JSON.parse(JSON.stringify(doc)));
 
   return (
     <section className="relative overflow-hidden py-20 bg-white dark:bg-slate-950 transition-colors duration-300">
