@@ -18,6 +18,7 @@ import {
   ClipboardList,
   PlusSquare,
   Sparkles,
+  FolderTree,
 } from "lucide-react";
 
 const userMenu = [
@@ -40,6 +41,7 @@ const sellerMenu = [
 const adminMenu = [
   { name: "Admin Profile", href: "/admin/profile", icon: User },
   { name: "Manage Furniture", href: "/admin/furniture", icon: Package },
+  { name: "Manage Categories", href: "/admin/categories", icon: FolderTree },
   { name: "Manage Users", href: "/admin/users", icon: Users },
   { name: "Featured Items", href: "/admin/featured", icon: Sparkles },
 ];

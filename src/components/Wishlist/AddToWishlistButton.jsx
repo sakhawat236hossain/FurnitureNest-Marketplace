@@ -4,10 +4,16 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
+import { Heart, Loader2 } from "lucide-react";
 
-export default function AddToWishlistButton({ product }) {
+export default function AddToWishlistButton({
+  product,
+  variant = "default",
+  className = "",
+}) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const userEmail = useMemo(() => {
     if (session?.user?.email) {
@@ -31,7 +37,12 @@ export default function AddToWishlistButton({ product }) {
     }
   }, [session]);
 
-  const handleAddToWishlist = async () => {
+  const handleAddToWishlist = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     if (!userEmail) {
       toast.error("Please login to add items to wishlist.");
       return;
@@ -54,6 +65,7 @@ export default function AddToWishlistButton({ product }) {
       });
 
       if (res.data.success) {
+        setIsSaved(true);
         toast.success(res.data.message || "Added to wishlist.");
       } else {
         toast.error(res.data.message || "Unable to add to wishlist.");
@@ -66,14 +78,49 @@ export default function AddToWishlistButton({ product }) {
     }
   };
 
+  if (variant === "icon") {
+    return (
+      <button
+        type="button"
+        onClick={handleAddToWishlist}
+        disabled={loading}
+        title="Add to Wishlist"
+        aria-label="Add to Wishlist"
+        className={`group/wishlist relative flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 p-2.5 text-slate-700 dark:text-slate-200 shadow-md backdrop-blur-md transition-all duration-200 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 hover:scale-110 active:scale-95 disabled:opacity-70 ${
+          isSaved ? "text-rose-500 bg-white dark:bg-slate-900" : ""
+        } ${className}`}
+      >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+        ) : (
+          <Heart
+            className={`h-4 w-4 transition-transform duration-200 group-hover/wishlist:scale-110 ${
+              isSaved ? "fill-rose-500 text-rose-500" : ""
+            }`}
+          />
+        )}
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={handleAddToWishlist}
       disabled={loading}
-      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 transition hover:border-amber-400 hover:text-amber-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-slate-950 dark:text-white"
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900/90 px-4 py-2.5 text-sm font-semibold text-gray-800 dark:text-gray-200 transition hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-500/10 shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${className}`}
     >
-      {loading ? "Saving..." : "Wishlist"}
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+          <span>Saving...</span>
+        </>
+      ) : (
+        <>
+          <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
+          <span>Wishlist</span>
+        </>
+      )}
     </button>
   );
 }
