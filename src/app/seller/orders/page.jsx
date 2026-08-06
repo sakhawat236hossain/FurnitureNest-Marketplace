@@ -11,10 +11,6 @@ export default function SellerOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [session]);
-
   const fetchOrders = async () => {
     let email = session?.user?.email;
 
@@ -42,11 +38,27 @@ export default function SellerOrdersPage() {
     }
   };
 
+  useEffect(() => {
+    fetchOrders();
+  }, [session]);
+
   const handleStatusChange = async (orderId, newStatus) => {
+    let email = session?.user?.email;
+    if (!email && typeof window !== 'undefined') {
+      const stored = localStorage.getItem('user');
+      if (stored) email = JSON.parse(stored).email;
+    }
+
+    if (!email) {
+      toast.error('Please login again to update this order.');
+      return;
+    }
+
     try {
       const res = await axios.patch('/api/seller/orders', {
         orderId,
         status: newStatus,
+        vendorEmail: email,
       });
 
       if (res.data.success) {
@@ -115,7 +127,7 @@ export default function SellerOrdersPage() {
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold capitalize ${
                           order.status === 'delivered'
                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                            : order.status === 'shipped'
+                            : order.status === 'approved'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
                             : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
                         }`}
@@ -125,16 +137,23 @@ export default function SellerOrdersPage() {
                     </td>
 
                     <td className="py-4 text-right">
-                      <select
-                        value={order.status || 'pending'}
-                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                        className="rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
+                      {order.status === 'pending' ? (
+                        <button
+                          onClick={() => handleStatusChange(order._id, 'approved')}
+                          className="rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-600"
+                        >
+                          Approve Order
+                        </button>
+                      ) : order.status === 'approved' ? (
+                        <button
+                          onClick={() => handleStatusChange(order._id, 'delivered')}
+                          className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                        >
+                          Mark Delivered
+                        </button>
+                      ) : (
+                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-300">Completed</span>
+                      )}
                     </td>
                   </tr>
                 ))}

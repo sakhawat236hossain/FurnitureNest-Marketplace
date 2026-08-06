@@ -57,7 +57,7 @@ export default function OrderButton({ product }) {
       });
 
       if (res.data.success) {
-        toast.success("Order request submitted. Admin will review it.");
+        toast.success("Order request sent to the vendor.");
       } else {
         toast.error(res.data.message || "Unable to place order.");
       }

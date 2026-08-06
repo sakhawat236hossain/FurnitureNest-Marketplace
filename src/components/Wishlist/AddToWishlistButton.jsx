@@ -49,6 +49,7 @@ export default function AddToWishlistButton({ product }) {
           image: product.images?.[0] || product.image || "/placeholder.png",
           category: product.category,
           vendorName: product.vendorName,
+          vendorEmail: product.vendorEmail,
         },
       });
 

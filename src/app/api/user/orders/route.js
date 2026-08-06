@@ -14,7 +14,7 @@ export async function GET(request) {
 
     const ordersCollection = await dbConnect(collections.ORDERS);
     const orders = await ordersCollection
-      .find({ userEmail: email })
+      .find({ userEmail: email.trim().toLowerCase() })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -32,37 +32,59 @@ export async function POST(request) {
   try {
     const data = await request.json();
 
-    if (!data.userEmail || !data.items || !data.totalPrice) {
+    if (!data.userEmail || !Array.isArray(data.items) || data.items.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          message: "userEmail, items, and totalPrice are required",
+          message: "userEmail and at least one order item are required",
         },
         { status: 400 },
       );
     }
 
-    const ordersCollection = await dbConnect(collections.ORDERS);
+    const hasItemWithoutVendor = data.items.some(
+      (item) => !item.vendorEmail?.trim(),
+    );
+    if (hasItemWithoutVendor) {
+      return NextResponse.json(
+        { success: false, message: "Every product must have a vendor email" },
+        { status: 400 },
+      );
+    }
 
-    const newOrder = {
-      userEmail: data.userEmail,
+    const itemsByVendor = data.items.reduce((groups, item) => {
+      const vendorEmail = item.vendorEmail?.trim().toLowerCase();
+      if (!groups[vendorEmail]) groups[vendorEmail] = [];
+      groups[vendorEmail].push(item);
+      return groups;
+    }, {});
+
+    const ordersCollection = await dbConnect(collections.ORDERS);
+    const createdAt = new Date();
+    const orders = Object.entries(itemsByVendor).map(([vendorEmail, items]) => ({
+      userEmail: data.userEmail.trim().toLowerCase(),
       userName: data.userName || "Customer",
       userPhone: data.userPhone || "",
       shippingAddress: data.shippingAddress || "N/A",
-      items: data.items,
-      totalPrice: Number(data.totalPrice),
+      vendorEmail,
+      vendorName: items[0]?.vendorName || "Vendor",
+      items,
+      totalPrice: items.reduce(
+        (total, item) => total + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+        0,
+      ),
       paymentMethod: data.paymentMethod || "Cash on Delivery",
       status: "pending",
-      approvedByAdmin: false,
-      createdAt: new Date(),
-    };
+      createdAt,
+      updatedAt: createdAt,
+    }));
 
-    const result = await ordersCollection.insertOne(newOrder);
+    const result = await ordersCollection.insertMany(orders);
 
     return NextResponse.json({
       success: true,
-      message: "Order placed successfully",
-      orderId: result.insertedId,
+      message: "Order request sent to the vendor",
+      orderIds: Object.values(result.insertedIds),
     });
   } catch (error) {
     console.error("User Orders POST Error:", error);

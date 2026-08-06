@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { ShoppingBag, CheckCircle, Truck, Clock, XCircle } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminOrdersPage() {
@@ -28,47 +28,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      const res = await axios.patch("/api/admin/orders", {
-        orderId,
-        status: newStatus,
-      });
-
-      if (res.data.success) {
-        toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
-        setOrders((prev) =>
-          prev.map((o) =>
-            o._id === orderId ? { ...o, status: newStatus } : o,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update order status");
-    }
-  };
-
-  const handleApproveOrder = async (orderId) => {
-    try {
-      const res = await axios.patch("/api/admin/orders", {
-        orderId,
-        approvedByAdmin: true,
-      });
-
-      if (res.data.success) {
-        toast.success("Order request approved");
-        setOrders((prev) =>
-          prev.map((o) =>
-            o._id === orderId ? { ...o, approvedByAdmin: true } : o,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to approve order request");
-    }
-  };
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto">
       <div>
@@ -101,8 +60,6 @@ export default function AdminOrdersPage() {
                   <th className="pb-4">Total Price</th>
                   <th className="pb-4">Order Date</th>
                   <th className="pb-4">Status</th>
-                  <th className="pb-4">Admin Approval</th>
-                  <th className="pb-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -137,54 +94,15 @@ export default function AdminOrdersPage() {
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold capitalize ${
                           order.status === "delivered"
                             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                            : order.status === "shipped"
+                            : order.status === "approved"
                               ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
-                              : order.status === "cancelled"
-                                ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
-                                : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
                         }`}
                       >
                         {order.status || "pending"}
                       </span>
                     </td>
 
-                    <td className="py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
-                          order.approvedByAdmin
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                            : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
-                        }`}
-                      >
-                        {order.approvedByAdmin
-                          ? "Approved"
-                          : "Pending Approval"}
-                      </span>
-                    </td>
-
-                    <td className="py-4 text-right space-y-2">
-                      {!order.approvedByAdmin && (
-                        <button
-                          onClick={() => handleApproveOrder(order._id)}
-                          className="w-full rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600"
-                        >
-                          Approve Request
-                        </button>
-                      )}
-                      <select
-                        value={order.status || "pending"}
-                        onChange={(e) =>
-                          handleStatusChange(order._id, e.target.value)
-                        }
-                        className="w-full rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
                   </tr>
                 ))}
               </tbody>

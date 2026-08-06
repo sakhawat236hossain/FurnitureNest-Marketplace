@@ -14,8 +14,14 @@ export async function GET(request) {
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
+    const normalizedEmail = email.trim().toLowerCase();
     const orders = await ordersCollection
-      .find({ "items.vendorEmail": email, approvedByAdmin: true })
+      .find({
+        $or: [
+          { vendorEmail: normalizedEmail },
+          { "items.vendorEmail": normalizedEmail, vendorEmail: { $exists: false } },
+        ],
+      })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -31,18 +37,29 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
-    const { orderId, status } = await request.json();
+    const { orderId, status, vendorEmail } = await request.json();
 
-    if (!orderId || !status) {
+    if (!orderId || !status || !vendorEmail) {
       return NextResponse.json(
-        { success: false, message: "orderId and status are required" },
+        { success: false, message: "orderId, status, and vendorEmail are required" },
+        { status: 400 },
+      );
+    }
+
+    if (!["approved", "delivered"].includes(status)) {
+      return NextResponse.json(
+        { success: false, message: "Status must be approved or delivered" },
         { status: 400 },
       );
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
     const result = await ordersCollection.updateOne(
-      { _id: new ObjectId(orderId) },
+      {
+        _id: new ObjectId(orderId),
+        vendorEmail: vendorEmail.trim().toLowerCase(),
+        ...(status === "approved" ? { status: "pending" } : { status: "approved" }),
+      },
       { $set: { status, updatedAt: new Date() } },
     );
 

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Heart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import OrderButton from "@/components/Order/OrderButton";
 
 export default function WishlistPage() {
   const { data: session } = useSession();
@@ -99,7 +100,18 @@ export default function WishlistPage() {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex flex-wrap justify-end gap-2">
+                <OrderButton
+                  product={{
+                    _id: item.furnitureId,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image,
+                    category: item.category,
+                    vendorName: item.vendorName,
+                    vendorEmail: item.vendorEmail,
+                  }}
+                />
                 <button
                   onClick={() => handleDelete(item._id)}
                   className="inline-flex items-center gap-2 rounded-2xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600"

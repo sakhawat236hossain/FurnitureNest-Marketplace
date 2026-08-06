@@ -36,7 +36,15 @@ export async function PATCH(request) {
     }
 
     const updateData = { updatedAt: new Date() };
-    if (status !== undefined) updateData.status = status;
+    if (status !== undefined) {
+      if (!["pending", "approved", "delivered"].includes(status)) {
+        return NextResponse.json(
+          { success: false, message: "Invalid order status" },
+          { status: 400 },
+        );
+      }
+      updateData.status = status;
+    }
     if (approvedByAdmin !== undefined)
       updateData.approvedByAdmin = approvedByAdmin;
 

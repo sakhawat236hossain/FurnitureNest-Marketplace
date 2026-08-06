@@ -76,9 +76,6 @@ export default function Navbar() {
         Contact
       </Link>
 
-      <Link href="/cart" className="hover:text-amber-500 transition">
-        Cart
-      </Link>
     </>
   );
 

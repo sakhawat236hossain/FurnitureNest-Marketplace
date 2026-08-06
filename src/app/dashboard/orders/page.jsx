@@ -76,7 +76,15 @@ export default function OrdersPage() {
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase text-amber-700">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${
+                    order.status === "delivered"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : order.status === "approved"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-amber-100 text-amber-700"
+                  }`}
+                >
                   {order.status || "pending"}
                 </span>
               </div>

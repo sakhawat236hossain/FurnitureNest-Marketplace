@@ -13,11 +13,34 @@ export async function GET(request) {
       );
     }
 
-    const reviewsCollection = await dbConnect("wishlists");
-    const items = await reviewsCollection
+    const wishlistCollection = await dbConnect("wishlists");
+    const items = await wishlistCollection
       .find({ userEmail: email })
       .sort({ createdAt: -1 })
       .toArray();
+
+    const legacyFurnitureIds = items
+      .filter((item) => !item.vendorEmail && ObjectId.isValid(item.furnitureId))
+      .map((item) => new ObjectId(item.furnitureId));
+
+    if (legacyFurnitureIds.length > 0) {
+      const furnitureCollection = await dbConnect(collections.FURNITURE);
+      const furniture = await furnitureCollection
+        .find({ _id: { $in: legacyFurnitureIds } })
+        .toArray();
+      const furnitureById = new Map(
+        furniture.map((item) => [item._id.toString(), item]),
+      );
+
+      items.forEach((item) => {
+        const matchingFurniture = furnitureById.get(item.furnitureId?.toString());
+        if (matchingFurniture) {
+          item.vendorName = matchingFurniture.vendorName;
+          item.vendorEmail = matchingFurniture.vendorEmail;
+          item.category = matchingFurniture.category;
+        }
+      });
+    }
 
     return NextResponse.json({ success: true, items });
   } catch (error) {
@@ -60,6 +83,9 @@ export async function POST(request) {
       name: furnitureItem.name,
       price: furnitureItem.price,
       image: furnitureItem.image,
+      category: furnitureItem.category,
+      vendorName: furnitureItem.vendorName,
+      vendorEmail: furnitureItem.vendorEmail,
       createdAt: new Date(),
     };
 
