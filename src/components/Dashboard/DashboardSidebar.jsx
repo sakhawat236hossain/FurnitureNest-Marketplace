@@ -19,6 +19,7 @@ import {
   PlusSquare,
   Sparkles,
   FolderTree,
+  Building2,
 } from "lucide-react";
 
 const userMenu = [
@@ -42,6 +43,7 @@ const adminMenu = [
   { name: "Admin Profile", href: "/admin/profile", icon: User },
   { name: "Manage Furniture", href: "/admin/furniture", icon: Package },
   { name: "Manage Categories", href: "/admin/categories", icon: FolderTree },
+  { name: "Manage Sellers", href: "/admin/sellers", icon: Building2 },
   { name: "Manage Users", href: "/admin/users", icon: Users },
   { name: "Featured Items", href: "/admin/featured", icon: Sparkles },
 ];
