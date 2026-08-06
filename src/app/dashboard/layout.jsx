@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       {" "}
-      <div className="flex">
+      <div className="flex min-w-0">
         {" "}
         <DashboardSidebar open={open} setOpen={setOpen} />{" "}
         <div className="flex min-w-0 flex-1 flex-col">

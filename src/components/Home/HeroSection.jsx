@@ -42,11 +42,11 @@ export default function HeroSection() {
         pagination={{ clickable: true }}
         navigation
         loop
-        className="h-[70vh] md:h-[75vh] lg:h-[80vh]"
+        className="h-[580px] sm:h-[70vh] md:h-[75vh] lg:h-[80vh]"
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div className="relative h-[70vh] md:h-[75vh] lg:h-[80vh] w-full">
+            <div className="relative h-[580px] w-full sm:h-[70vh] md:h-[75vh] lg:h-[80vh]">
               {/* Background Image */}
               <img
                 src={slide.image}

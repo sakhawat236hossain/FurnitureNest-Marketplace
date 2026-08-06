@@ -56,8 +56,8 @@ export default async function ProductPage({ params }) {
         <section className="overflow-hidden rounded-[2rem] border border-stone-200/90 bg-white shadow-[0_24px_70px_-30px_rgba(41,37,36,0.3)] dark:border-white/10 dark:bg-slate-900 dark:shadow-none">
           <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
             <div className="border-b border-stone-200/80 bg-stone-100 p-3 dark:border-white/10 dark:bg-slate-950 lg:border-b-0 lg:border-r">
-              <div className="grid min-h-[450px] grid-cols-[1.35fr_0.65fr] grid-rows-2 gap-3 sm:min-h-[580px]">
-                <div className="relative row-span-2 overflow-hidden rounded-[1.45rem] bg-stone-200 dark:bg-slate-800">
+              <div className="grid min-h-[360px] grid-cols-1 gap-3 sm:min-h-[580px] sm:grid-cols-[1.35fr_0.65fr] sm:grid-rows-2">
+                <div className="relative overflow-hidden rounded-[1.45rem] bg-stone-200 dark:bg-slate-800 sm:row-span-2">
                   <img src={productImages[0]} alt={product.name} className="h-full w-full object-cover transition duration-700 hover:scale-105" />
                   {discount > 0 && <span className="absolute left-4 top-4 rounded-full bg-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-lg">-{discount}% OFF</span>}
                 </div>

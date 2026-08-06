@@ -88,7 +88,7 @@ export default function NewsletterSection() {
             transition={{ delay: 0.2, duration: 0.7 }}
             className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center max-w-4xl mx-auto"
           >
-            <div className="flex-1 sm:min-w-[420px]">
+            <div className="w-full flex-1 sm:min-w-0">
               <div className="relative">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                   📧

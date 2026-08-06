@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useState } from "react";
 import {
   LayoutDashboard,
   User,
@@ -11,6 +12,8 @@ import {
   ShoppingCart,
   BarChart3,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 
 const links = [
@@ -24,11 +27,17 @@ const links = [
 
 export default function SellerSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <aside className="hidden md:flex w-72 flex-col justify-between border-r border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 p-5 min-h-screen">
+    <>
+      <button onClick={() => setOpen(true)} className="fixed bottom-5 right-5 z-30 rounded-2xl bg-amber-500 p-3 text-white shadow-lg md:hidden" aria-label="Open seller menu">
+        <Menu size={22} />
+      </button>
+      {open && <button onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-950/40 md:hidden" aria-label="Close seller menu" />}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[86vw] flex-col justify-between border-r border-gray-200 bg-white p-5 shadow-2xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-900 md:static md:min-h-screen md:max-w-none md:translate-x-0 md:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
       <div>
-        <div className="flex items-center gap-3 mb-8">
+        <div className="mb-8 flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
             F
           </div>
@@ -40,6 +49,7 @@ export default function SellerSidebar() {
               Vendor Mode
             </span>
           </div>
+          <button onClick={() => setOpen(false)} className="ml-auto rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 md:hidden" aria-label="Close menu"><X size={19} /></button>
         </div>
 
         <nav className="space-y-2">
@@ -50,6 +60,7 @@ export default function SellerSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   active
                     ? "bg-linear-to-r from-amber-400 to-orange-500 text-white shadow-md"
@@ -73,6 +84,7 @@ export default function SellerSidebar() {
         <LogOut size={18} />
         Logout
       </button>
-    </aside>
+      </aside>
+    </>
   );
 }
