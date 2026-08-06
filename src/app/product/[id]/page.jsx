@@ -45,6 +45,16 @@ export default async function ProductPage({ params }) {
   const price = Number(product.price) || 0;
   const oldPrice = Number(product.oldPrice) || 0;
   const discount = oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+  const productForClient = {
+    _id: product._id.toString(),
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    images: productImages,
+    category: product.category,
+    vendorName: product.vendorName,
+    vendorEmail: product.vendorEmail,
+  };
 
   return (
     <main className="min-h-screen bg-[#faf9f6] px-4 py-8 dark:bg-slate-950 sm:px-6 lg:px-8 lg:py-12">
@@ -94,8 +104,8 @@ export default async function ProductPage({ params }) {
               </div>
 
               <div className="mt-8 flex flex-col gap-3 border-t border-stone-200 pt-7 dark:border-white/10 sm:flex-row">
-                <OrderButton product={product} />
-                <AddToWishlistButton product={product} />
+                <OrderButton product={productForClient} />
+                <AddToWishlistButton product={productForClient} />
               </div>
               <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Order request is sent directly to the seller for approval.</p>
             </div>

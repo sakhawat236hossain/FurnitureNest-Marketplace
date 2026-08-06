@@ -35,7 +35,7 @@ export default function SellerSidebar() {
         <Menu size={22} />
       </button>
       {open && <button onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-950/40 md:hidden" aria-label="Close seller menu" />}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[86vw] flex-col justify-between border-r border-gray-200 bg-white p-5 shadow-2xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-900 md:static md:min-h-screen md:max-w-none md:translate-x-0 md:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[86vw] flex-col justify-between overflow-y-auto border-r border-gray-200 bg-white p-5 shadow-2xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-900 md:sticky md:top-0 md:h-screen md:max-w-none md:translate-x-0 md:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
       <div>
         <div className="mb-8 flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
