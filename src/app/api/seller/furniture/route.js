@@ -38,13 +38,13 @@ export async function POST(request) {
       !data.price ||
       !data.vendorEmail ||
       !Array.isArray(data.images) ||
-      data.images.length < 3
+      data.images.length !== 3
     ) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Name, price, vendor email, and at least 3 images are required",
+            "Name, price, vendor email, and exactly 3 images are required",
         },
         { status: 400 },
       );

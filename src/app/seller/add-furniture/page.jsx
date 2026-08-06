@@ -28,8 +28,9 @@ const schema = z.object({
   dimensions: z.string().optional(),
   description: z.string().min(10, "Provide a description (at least 10 chars)"),
   images: z.any().refine((value) => {
-    return Array.isArray(value) ? value.length >= 3 : value?.length >= 3;
-  }, "Please upload at least 3 product images"),
+    const count = Array.isArray(value) ? value.length : value?.length;
+    return count === 3;
+  }, "Please upload exactly 3 product images"),
 });
 
 export default function AddFurniturePage() {
@@ -73,8 +74,8 @@ export default function AddFurniturePage() {
       }
 
       const imageFiles = data.images ? Array.from(data.images) : [];
-      if (imageFiles.length < 3) {
-        toast.error("Please upload at least 3 product images.");
+      if (imageFiles.length !== 3) {
+        toast.error("Please upload exactly 3 product images.");
         return;
       }
 
@@ -274,7 +275,7 @@ export default function AddFurniturePage() {
               </p>
             )}
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Upload at least 3 images so customers can see the product from
+              Upload exactly 3 images so customers can see the product from
               multiple angles.
             </p>
           </div>

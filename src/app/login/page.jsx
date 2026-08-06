@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -40,8 +40,16 @@ export default function LoginPage() {
         throw new Error("Invalid email or password");
       }
 
+      const activeSession = await getSession();
+      const role = activeSession?.user?.role?.toLowerCase();
       toast.success("Login successful");
-      router.replace("/dashboard");
+      router.replace(
+        role === "admin"
+          ? "/admin"
+          : role === "seller"
+            ? "/seller"
+            : "/dashboard/user",
+      );
     } catch (error) {
       toast.error(error.message || "Login failed");
     }
@@ -118,7 +126,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-400">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/register"
             className="text-amber-400 hover:text-amber-300 font-medium transition"

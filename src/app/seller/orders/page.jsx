@@ -110,12 +110,25 @@ export default function SellerOrdersPage() {
                 {orders.map((order) => (
                   <tr key={order._id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
                     <td className="py-4 font-medium text-gray-900 dark:text-white">
-                      <p className="font-bold">{order.userName || 'Customer'}</p>
-                      <p className="text-xs text-gray-400">{order.userEmail}</p>
+                      <div className="flex items-center gap-3">
+                        {order.userImage ? (
+                          <img src={order.userImage} alt="Customer" className="h-9 w-9 rounded-full object-cover" />
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
+                            {(order.userName || 'C').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-bold">{order.userName || 'Customer'}</p>
+                          <p className="text-xs text-gray-400">{order.userEmail}</p>
+                          <p className="text-xs text-gray-400">{order.userPhone}</p>
+                        </div>
+                      </div>
                     </td>
 
                     <td className="py-4 text-gray-600 dark:text-gray-300">
-                      {order.shippingAddress || 'Dhaka, Bangladesh'}
+                      <p className="font-semibold">{order.district || 'District not provided'}</p>
+                      <p className="text-xs">{order.shippingAddress || 'Address not provided'}</p>
                     </td>
 
                     <td className="py-4 font-extrabold text-gray-900 dark:text-white">
@@ -137,23 +150,15 @@ export default function SellerOrdersPage() {
                     </td>
 
                     <td className="py-4 text-right">
-                      {order.status === 'pending' ? (
-                        <button
-                          onClick={() => handleStatusChange(order._id, 'approved')}
-                          className="rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-600"
-                        >
-                          Approve Order
-                        </button>
-                      ) : order.status === 'approved' ? (
-                        <button
-                          onClick={() => handleStatusChange(order._id, 'delivered')}
-                          className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600"
-                        >
-                          Mark Delivered
-                        </button>
-                      ) : (
-                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-300">Completed</span>
-                      )}
+                      <select
+                        value={order.status || 'pending'}
+                        onChange={(event) => handleStatusChange(order._id, event.target.value)}
+                        className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
                     </td>
                   </tr>
                 ))}

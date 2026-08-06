@@ -1,17 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ObjectId } from "mongodb";
+import { ArrowLeft, Box, Check, Ruler, ShieldCheck, Truck } from "lucide-react";
 import { dbConnect, collections } from "@/lib/dbConnect";
 import OrderButton from "@/components/Order/OrderButton";
 import AddToWishlistButton from "@/components/Wishlist/AddToWishlistButton";
 
 export default async function ProductPage({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  const { id } = await params;
 
-  if (!ObjectId.isValid(id)) {
-    return notFound();
-  }
+  if (!ObjectId.isValid(id)) notFound();
 
   let product = null;
   try {
@@ -27,145 +25,93 @@ export default async function ProductPage({ params }) {
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-gray-200/80 bg-white/90 p-12 text-center shadow-sm dark:border-white/10 dark:bg-slate-900/80">
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-            Product not found
-          </h1>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            This furniture item may no longer be available or the link is
-            invalid.
-          </p>
-          <div className="mt-8">
-            <Link
-              href="/categories"
-              className="inline-flex rounded-2xl bg-amber-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:scale-[1.02]"
-            >
-              Browse categories
-            </Link>
-          </div>
+      <main className="min-h-screen bg-stone-50 px-4 py-20 dark:bg-slate-950 sm:px-6">
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-stone-200 bg-white p-10 text-center shadow-xl shadow-stone-200/50 dark:border-white/10 dark:bg-slate-900 dark:shadow-none">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">Unavailable</p>
+          <h1 className="mt-3 text-3xl font-black text-slate-900 dark:text-white">Product not found</h1>
+          <p className="mt-3 text-slate-600 dark:text-slate-400">This furniture item may no longer be available.</p>
+          <Link href="/categories" className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-amber-500 dark:bg-amber-500">
+            <ArrowLeft size={17} /> Browse products
+          </Link>
         </div>
       </main>
     );
   }
 
+  const productImages = (product.images?.filter(Boolean)?.length
+    ? product.images.filter(Boolean)
+    : [product.image || "/placeholder.png"]
+  ).slice(0, 3);
+  const price = Number(product.price) || 0;
+  const oldPrice = Number(product.oldPrice) || 0;
+  const discount = oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <div className="rounded-[2rem] border border-gray-200/80 bg-white/90 p-8 shadow-xl shadow-orange-500/5 dark:border-white/10 dark:bg-slate-900/80">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            <div className="lg:flex-1">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                {(product.images || [product.image]).map((src, index) => (
-                  <div
-                    key={index}
-                    className="overflow-hidden rounded-[2rem] border border-gray-200 dark:border-white/10 bg-slate-100 dark:bg-slate-950"
-                  >
-                    <img
-                      src={src || "/placeholder.png"}
-                      alt={product.name}
-                      className="h-80 w-full object-cover transition duration-500 hover:scale-105"
-                    />
+    <main className="min-h-screen bg-[#faf9f6] px-4 py-8 dark:bg-slate-950 sm:px-6 lg:px-8 lg:py-12">
+      <div className="mx-auto max-w-7xl">
+        <Link href="/categories" className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-amber-600 dark:text-slate-300 dark:hover:text-amber-400">
+          <ArrowLeft size={17} /> Back to collection
+        </Link>
+
+        <section className="overflow-hidden rounded-[2rem] border border-stone-200/90 bg-white shadow-[0_24px_70px_-30px_rgba(41,37,36,0.3)] dark:border-white/10 dark:bg-slate-900 dark:shadow-none">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="border-b border-stone-200/80 bg-stone-100 p-3 dark:border-white/10 dark:bg-slate-950 lg:border-b-0 lg:border-r">
+              <div className="grid min-h-[450px] grid-cols-[1.35fr_0.65fr] grid-rows-2 gap-3 sm:min-h-[580px]">
+                <div className="relative row-span-2 overflow-hidden rounded-[1.45rem] bg-stone-200 dark:bg-slate-800">
+                  <img src={productImages[0]} alt={product.name} className="h-full w-full object-cover transition duration-700 hover:scale-105" />
+                  {discount > 0 && <span className="absolute left-4 top-4 rounded-full bg-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-lg">-{discount}% OFF</span>}
+                </div>
+                {productImages.slice(1).map((image, index) => (
+                  <div key={image} className="hidden overflow-hidden rounded-[1.2rem] bg-stone-200 dark:bg-slate-800 sm:block">
+                    <img src={image} alt={`${product.name} view ${index + 2}`} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="lg:w-[42rem]">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">
-                {product.category || "General"}
-              </p>
-              <h1 className="mt-4 text-4xl font-extrabold text-gray-900 dark:text-white">
-                {product.name}
-              </h1>
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                  {typeof product.price === "number"
-                    ? `৳${product.price.toLocaleString()}`
-                    : product.price || "৳0"}
-                </p>
-                {product.oldPrice && (
-                  <p className="text-sm text-gray-400 line-through">
-                    {typeof product.oldPrice === "number"
-                      ? `৳${product.oldPrice.toLocaleString()}`
-                      : product.oldPrice}
-                  </p>
-                )}
+            <div className="p-6 sm:p-9 lg:p-10">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">{product.category || "Furniture"}</span>
+                <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${product.inStock ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"}`}>
+                  <Check size={13} /> {product.inStock ? "In stock" : "Out of stock"}
+                </span>
               </div>
 
-              <div className="mt-8 space-y-6 text-gray-600 dark:text-gray-300">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Description
-                  </h2>
-                  <p className="mt-3 leading-7">
-                    {product.description ||
-                      "No description available for this item."}
-                  </p>
-                </div>
+              <h1 className="mt-5 text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white sm:text-4xl xl:text-5xl">{product.name}</h1>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">{product.description || "Thoughtfully designed furniture made to bring comfort and character to your home."}</p>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 p-5">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Stock
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
-                      {product.stock ?? "N/A"}
-                    </p>
-                  </div>
-                  <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 p-5">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Availability
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
-                      {product.inStock ? "In stock" : "Out of stock"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 p-5">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Details
-                  </p>
-                  <ul className="mt-3 space-y-2 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                    <li>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        Material:
-                      </span>{" "}
-                      {product.material || "Not specified"}
-                    </li>
-                    <li>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        Dimensions:
-                      </span>{" "}
-                      {product.dimensions || "Not specified"}
-                    </li>
-                    <li>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        Vendor:
-                      </span>{" "}
-                      {product.vendorName || "Vendor"}
-                    </li>
-                  </ul>
-                </div>
+              <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2 border-y border-stone-200 py-6 dark:border-white/10">
+                <p className="text-4xl font-black tracking-tight text-slate-950 dark:text-white">৳{price.toLocaleString()}</p>
+                {oldPrice > price && <p className="pb-1 text-base font-medium text-slate-400 line-through">৳{oldPrice.toLocaleString()}</p>}
+                {discount > 0 && <p className="pb-1 text-sm font-bold text-emerald-600 dark:text-emerald-400">You save ৳{(oldPrice - price).toLocaleString()}</p>}
               </div>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <OrderButton product={product} />
-                  <AddToWishlistButton product={product} />
-                </div>
-                <Link
-                  href="/categories"
-                  className="inline-flex items-center justify-center rounded-2xl border border-gray-300 bg-white px-6 py-4 text-sm font-semibold text-gray-900 transition hover:border-amber-400 hover:text-amber-500 dark:border-white/10 dark:bg-slate-950 dark:text-white"
-                >
-                  Back to categories
-                </Link>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <InfoCard icon={Box} label="Stock" value={product.stock ?? "Available"} />
+                <InfoCard icon={Ruler} label="Dimensions" value={product.dimensions || "On request"} />
+                <InfoCard icon={ShieldCheck} label="Material" value={product.material || "Premium quality"} />
+                <InfoCard icon={Truck} label="Seller" value={product.vendorName || "FurnishNest seller"} />
               </div>
+
+              <div className="mt-8 flex flex-col gap-3 border-t border-stone-200 pt-7 dark:border-white/10 sm:flex-row">
+                <OrderButton product={product} />
+                <AddToWishlistButton product={product} />
+              </div>
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Order request is sent directly to the seller for approval.</p>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
+  );
+}
+
+function InfoCard({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-white/10 dark:bg-slate-950">
+      <Icon size={18} className="text-amber-600 dark:text-amber-400" />
+      <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 truncate text-sm font-bold text-slate-900 dark:text-white" title={String(value)}>{value}</p>
+    </div>
   );
 }

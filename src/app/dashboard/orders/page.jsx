@@ -110,6 +110,12 @@ export default function OrdersPage() {
                 </p>
                 <p className="mt-1">
                   <span className="font-semibold text-gray-900 dark:text-white">
+                    District:
+                  </span>{" "}
+                  {order.district || "N/A"}
+                </p>
+                <p className="mt-1">
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     Address:
                   </span>{" "}
                   {order.shippingAddress || "N/A"}

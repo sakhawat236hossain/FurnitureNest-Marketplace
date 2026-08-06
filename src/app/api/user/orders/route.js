@@ -32,11 +32,19 @@ export async function POST(request) {
   try {
     const data = await request.json();
 
-    if (!data.userEmail || !Array.isArray(data.items) || data.items.length === 0) {
+    if (
+      !data.userEmail ||
+      !data.userName?.trim() ||
+      !data.userPhone?.trim() ||
+      !data.district?.trim() ||
+      !data.shippingAddress?.trim() ||
+      !Array.isArray(data.items) ||
+      data.items.length === 0
+    ) {
       return NextResponse.json(
         {
           success: false,
-          message: "userEmail and at least one order item are required",
+          message: "Customer and delivery details are required",
         },
         { status: 400 },
       );
@@ -63,9 +71,11 @@ export async function POST(request) {
     const createdAt = new Date();
     const orders = Object.entries(itemsByVendor).map(([vendorEmail, items]) => ({
       userEmail: data.userEmail.trim().toLowerCase(),
-      userName: data.userName || "Customer",
-      userPhone: data.userPhone || "",
-      shippingAddress: data.shippingAddress || "N/A",
+      userName: data.userName.trim(),
+      userImage: data.userImage || "",
+      userPhone: data.userPhone.trim(),
+      district: data.district.trim(),
+      shippingAddress: data.shippingAddress.trim(),
       vendorEmail,
       vendorName: items[0]?.vendorName || "Vendor",
       items,

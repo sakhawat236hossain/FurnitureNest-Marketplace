@@ -46,9 +46,9 @@ export async function PATCH(request) {
       );
     }
 
-    if (!["approved", "delivered"].includes(status)) {
+    if (!["pending", "approved", "delivered"].includes(status)) {
       return NextResponse.json(
-        { success: false, message: "Status must be approved or delivered" },
+        { success: false, message: "Invalid order status" },
         { status: 400 },
       );
     }
@@ -58,7 +58,6 @@ export async function PATCH(request) {
       {
         _id: new ObjectId(orderId),
         vendorEmail: vendorEmail.trim().toLowerCase(),
-        ...(status === "approved" ? { status: "pending" } : { status: "approved" }),
       },
       { $set: { status, updatedAt: new Date() } },
     );
