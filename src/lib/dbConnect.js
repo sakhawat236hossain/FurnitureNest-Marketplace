@@ -45,6 +45,7 @@ export const collections = {
   REVIEWS: "reviews",
   FURNITURE: "furniture",
   COUPONS: "coupons",
+  PAYOUTS: "payouts",
 };
 
 export default clientPromise;
