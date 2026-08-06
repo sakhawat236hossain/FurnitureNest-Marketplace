@@ -1,11 +1,19 @@
 import { dbConnect, collections } from "@/lib/dbConnect";
+import { requireAuth } from "@/lib/authGuard";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
+    const auth = await requireAuth();
+    if (!auth.authorized) return auth.response;
 
-    if (!email) {
+    const sessionEmail = auth.session.user.email?.toLowerCase();
+    const queryEmail = request.nextUrl.searchParams.get("email")?.trim().toLowerCase();
+    
+    // Only allow users to view their own orders unless they are admin
+    const emailToQuery = auth.session.user.role === "admin" ? (queryEmail || sessionEmail) : sessionEmail;
+
+    if (!emailToQuery) {
       return NextResponse.json(
         { success: false, message: "User email is required" },
         { status: 400 },
@@ -14,7 +22,7 @@ export async function GET(request) {
 
     const ordersCollection = await dbConnect(collections.ORDERS);
     const orders = await ordersCollection
-      .find({ userEmail: email.trim().toLowerCase() })
+      .find({ userEmail: emailToQuery })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -30,10 +38,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const auth = await requireAuth();
+    if (!auth.authorized) return auth.response;
+
     const data = await request.json();
+    const userEmail = auth.session.user.email?.toLowerCase();
 
     if (
-      !data.userEmail ||
       !data.userName?.trim() ||
       !data.userPhone?.trim() ||
       !data.district?.trim() ||
@@ -70,9 +81,9 @@ export async function POST(request) {
     const ordersCollection = await dbConnect(collections.ORDERS);
     const createdAt = new Date();
     const orders = Object.entries(itemsByVendor).map(([vendorEmail, items]) => ({
-      userEmail: data.userEmail.trim().toLowerCase(),
+      userEmail,
       userName: data.userName.trim(),
-      userImage: data.userImage || "",
+      userImage: auth.session.user.image || data.userImage || "",
       userPhone: data.userPhone.trim(),
       district: data.district.trim(),
       shippingAddress: data.shippingAddress.trim(),
@@ -83,8 +94,11 @@ export async function POST(request) {
         (total, item) => total + (Number(item.price) || 0) * (Number(item.quantity) || 1),
         0,
       ),
-      paymentMethod: data.paymentMethod || "Cash on Delivery",
+      paymentMethod: "Cash on Delivery",
       status: "pending",
+      timeline: [
+        { status: "pending", updatedAt: createdAt, note: "Order placed (Cash on Delivery)" }
+      ],
       createdAt,
       updatedAt: createdAt,
     }));
@@ -93,7 +107,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      message: "Order request sent to the vendor",
+      message: "Order request placed successfully (Cash on Delivery)",
       orderIds: Object.values(result.insertedIds),
     });
   } catch (error) {

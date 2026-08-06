@@ -1,12 +1,18 @@
 import { dbConnect, collections } from "@/lib/dbConnect";
+import { requireAuth } from "@/lib/authGuard";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
+    const auth = await requireAuth(["seller", "admin"]);
+    if (!auth.authorized) return auth.response;
 
-    if (!email) {
+    const sessionEmail = auth.session.user.email?.toLowerCase();
+    const queryEmail = request.nextUrl.searchParams.get("email")?.trim().toLowerCase();
+    const normalizedEmail = auth.session.user.role === "admin" ? (queryEmail || sessionEmail) : sessionEmail;
+
+    if (!normalizedEmail) {
       return NextResponse.json(
         { success: false, message: "Vendor email is required" },
         { status: 400 },
@@ -14,7 +20,6 @@ export async function GET(request) {
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
-    const normalizedEmail = email.trim().toLowerCase();
     const orders = await ordersCollection
       .find({
         $or: [
@@ -37,16 +42,20 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
-    const { orderId, status, vendorEmail } = await request.json();
+    const auth = await requireAuth(["seller", "admin"]);
+    if (!auth.authorized) return auth.response;
 
-    if (!orderId || !status || !vendorEmail) {
+    const { orderId, status } = await request.json();
+    const vendorEmail = auth.session.user.email?.toLowerCase();
+
+    if (!orderId || !status) {
       return NextResponse.json(
-        { success: false, message: "orderId, status, and vendorEmail are required" },
+        { success: false, message: "orderId and status are required" },
         { status: 400 },
       );
     }
 
-    if (!["pending", "approved", "delivered"].includes(status)) {
+    if (!["pending", "approved", "shipped", "delivered", "cancelled"].includes(status)) {
       return NextResponse.json(
         { success: false, message: "Invalid order status" },
         { status: 400 },
@@ -54,17 +63,21 @@ export async function PATCH(request) {
     }
 
     const ordersCollection = await dbConnect(collections.ORDERS);
+    const updateQuery = auth.session.user.role === "admin"
+      ? { _id: new ObjectId(orderId) }
+      : { _id: new ObjectId(orderId), vendorEmail };
+
     const result = await ordersCollection.updateOne(
-      {
-        _id: new ObjectId(orderId),
-        vendorEmail: vendorEmail.trim().toLowerCase(),
+      updateQuery,
+      { 
+        $set: { status, updatedAt: new Date() },
+        $push: { timeline: { status, updatedAt: new Date(), note: `Status changed to ${status}` } }
       },
-      { $set: { status, updatedAt: new Date() } },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
-        { success: false, message: "Order not found" },
+        { success: false, message: "Order not found or access denied" },
         { status: 404 },
       );
     }

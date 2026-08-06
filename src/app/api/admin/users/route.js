@@ -1,9 +1,17 @@
 import { dbConnect, collections } from "@/lib/dbConnect";
+import { requireAuth } from "@/lib/authGuard";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(request) {
   try {
+    const auth = await requireAuth("admin");
+    if (!auth.authorized) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const roleFilter = searchParams.get("role");
     const searchQuery = searchParams.get("q");
@@ -15,9 +23,10 @@ export async function GET(request) {
       query.role = roleFilter;
     }
     if (searchQuery) {
+      const safeSearch = escapeRegExp(searchQuery);
       query.$or = [
-        { name: { $regex: searchQuery, $options: "i" } },
-        { email: { $regex: searchQuery, $options: "i" } },
+        { name: { $regex: safeSearch, $options: "i" } },
+        { email: { $regex: safeSearch, $options: "i" } },
       ];
     }
 
@@ -38,6 +47,9 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
+    const auth = await requireAuth("admin");
+    if (!auth.authorized) return auth.response;
+
     const { userId, role, status, isFraud } = await request.json();
 
     if (!userId) {
@@ -110,6 +122,9 @@ export async function PATCH(request) {
 
 export async function DELETE(request) {
   try {
+    const auth = await requireAuth("admin");
+    if (!auth.authorized) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 

@@ -86,10 +86,28 @@ export default function Footer() {
 
               <li>
                 <Link
+                  href="/about"
+                  className="transition hover:text-amber-400"
+                >
+                  About Us
+                </Link>
+              </li>
+
+              <li>
+                <Link
                   href="/contact"
                   className="transition hover:text-amber-400"
                 >
                   Contact Us
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/faq"
+                  className="transition hover:text-amber-400"
+                >
+                  FAQ & Support
                 </Link>
               </li>
             </ul>
@@ -187,7 +205,7 @@ export default function Footer() {
               Terms
             </Link>
 
-            <Link href="/support" className="hover:text-amber-400 transition">
+            <Link href="/faq" className="hover:text-amber-400 transition">
               Support
             </Link>
           </div>

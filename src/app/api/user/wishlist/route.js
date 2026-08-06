@@ -1,17 +1,14 @@
 import { dbConnect, collections } from "@/lib/dbConnect";
+import { requireAuth } from "@/lib/authGuard";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
+    const auth = await requireAuth();
+    if (!auth.authorized) return auth.response;
 
-    if (!email) {
-      return NextResponse.json(
-        { success: false, message: "User email is required" },
-        { status: 400 }
-      );
-    }
+    const email = auth.session.user.email?.toLowerCase();
 
     const wishlistCollection = await dbConnect("wishlists");
     const items = await wishlistCollection
@@ -54,11 +51,15 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { userEmail, furnitureItem } = await request.json();
+    const auth = await requireAuth();
+    if (!auth.authorized) return auth.response;
 
-    if (!userEmail || !furnitureItem) {
+    const { furnitureItem } = await request.json();
+    const userEmail = auth.session.user.email?.toLowerCase();
+
+    if (!furnitureItem) {
       return NextResponse.json(
-        { success: false, message: "userEmail and furnitureItem are required" },
+        { success: false, message: "furnitureItem is required" },
         { status: 400 }
       );
     }
@@ -106,8 +107,12 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
+    const auth = await requireAuth();
+    if (!auth.authorized) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const userEmail = auth.session.user.email?.toLowerCase();
 
     if (!id) {
       return NextResponse.json(
@@ -117,7 +122,7 @@ export async function DELETE(request) {
     }
 
     const wishlistCollection = await dbConnect("wishlists");
-    await wishlistCollection.deleteOne({ _id: new ObjectId(id) });
+    await wishlistCollection.deleteOne({ _id: new ObjectId(id), userEmail });
 
     return NextResponse.json({
       success: true,
