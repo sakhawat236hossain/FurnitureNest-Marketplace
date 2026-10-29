@@ -19,7 +19,9 @@ export default async function CategorySection() {
     .toArray();
 
   const productCategoryNames = [
-    ...new Set(rawProductCategories.map((item) => item.category).filter(Boolean)),
+    ...new Set(
+      rawProductCategories.map((item) => item.category).filter(Boolean),
+    ),
   ];
 
   // Combine database categories dynamically
@@ -101,7 +103,9 @@ export default async function CategorySection() {
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold">{cat.name}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold">
+                        {cat.name}
+                      </h3>
 
                       <p className="mt-1 text-xs sm:text-sm text-gray-200">
                         Explore Collection
@@ -129,7 +133,8 @@ export default async function CategorySection() {
           ) : (
             <div className="sm:col-span-2 lg:col-span-3 rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-10 text-center">
               <p className="text-gray-600 dark:text-gray-400">
-                No categories found in database yet. Add categories from Admin Dashboard.
+                No categories found in database yet. Add categories from Admin
+                Dashboard.
               </p>
             </div>
           )}
